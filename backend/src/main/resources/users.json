@@ -1,0 +1,73 @@
+[ {
+  "id" : 1,
+  "login" : "ivan_ivanov",
+  "password" : "password123",
+  "role" : "user",
+  "email" : "ivan.ivanov@example.com"
+}, {
+  "id" : 2,
+  "login" : "maria_petrova",
+  "password" : "password456",
+  "role" : "admin",
+  "email" : "maria.petrova@example.com"
+}, {
+  "id" : 3,
+  "login" : "alexey_smirnov",
+  "password" : "alexey1234",
+  "role" : "user",
+  "email" : "alexey.smirnov@example.com"
+}, {
+  "id" : 4,
+  "login" : "elena_kuznetsova",
+  "password" : "elena5678",
+  "role" : "user",
+  "email" : "elena.kuznetsova@example.com"
+}, {
+  "id" : 5,
+  "login" : "dmitry_popov",
+  "password" : "dmitry9012",
+  "role" : "manager",
+  "email" : "dmitry.popov@example.com"
+}, {
+  "id" : 6,
+  "login" : "tatiana_sokolova",
+  "password" : "tatiana3456",
+  "role" : "user",
+  "email" : "tatiana.sokolova@example.com"
+}, {
+  "id" : 7,
+  "login" : "sergey_morozov",
+  "password" : "sergey7890",
+  "role" : "admin",
+  "email" : "sergey.morozov@example.com"
+}, {
+  "id" : 8,
+  "login" : "nina_lebedeva",
+  "password" : "nina1234",
+  "role" : "manager",
+  "email" : "nina.lebedeva@example.com"
+}, {
+  "id" : 9,
+  "login" : "maksim_kovalev",
+  "password" : "maksim5678",
+  "role" : "user",
+  "email" : "maksim.kovalev@example.com"
+}, {
+  "id" : 11,
+  "login" : "igor_arkhipov",
+  "password" : "igor1234",
+  "role" : "admin",
+  "email" : "igor.arkhipov@example.com"
+}, {
+  "id" : 13,
+  "login" : "vladimir_fedorov",
+  "password" : "vladimir9012",
+  "role" : "user",
+  "email" : "vladimir.fedorov@example.com"
+}, {
+  "id" : 15,
+  "login" : "andrei_shevchenko",
+  "password" : "andrei5678",
+  "role" : "admin",
+  "email" : "andrei.shevchenko@example.com"
+} ]
