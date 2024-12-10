@@ -14,11 +14,14 @@ class CustomUserDetailsService(
     private val userRepository: UserRepository
 ) : UserDetailsService {
 
+    // Виртуальный метод загрузики пользователя по email в данном случае
+    // Возвращает UserDetails, который содержит данные о пользователе (логин, пароль, роли)
     override fun loadUserByUsername(username: String): UserDetails =
         userRepository.findByEmail(username)
             ?.mapToUserDetails()
             ?: throw UsernameNotFoundException("Not found!")
 
+    // Метод серелизации данных пользователя (логин (email), пароль, роль)
     private fun ApplicationUser.mapToUserDetails(): UserDetails =
         User.builder()
             .username(this.email)

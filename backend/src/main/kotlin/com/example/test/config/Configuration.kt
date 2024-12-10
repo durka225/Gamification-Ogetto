@@ -19,13 +19,18 @@ import org.springframework.security.crypto.password.PasswordEncoder
 @EnableConfigurationProperties(JwtProperties::class)
 class Configuration {
 
+    // Конфигурация изменения данных пользователя
+    // Детали пользователя принимают вид, который указан в userRepository
     @Bean
     fun userDetailsService(userRepository: UserRepository): UserDetailsService =
         CustomUserDetailsService(userRepository)
 
+    // Конфигурация шифрования паролей с помощью BCrypt
     @Bean
     fun encoder(): PasswordEncoder = BCryptPasswordEncoder()
 
+    // Конфигурация аутентификации пользователя
+    // Аунтентификация состоит из двух элементов (email и password зашифрованный)
     @Bean
     fun authenticationProvider(userRepository: UserRepository): AuthenticationProvider =
         DaoAuthenticationProvider()
@@ -34,6 +39,9 @@ class Configuration {
                 it.setPasswordEncoder(encoder())
             }
 
+    // Конфигурация менеджера аутентификации
+    // Менеджер аутентификации управляет аутентификацией пользователей
+    // Используется для проверки подлинности пользователей
     @Bean
     fun authenticationManager(config: AuthenticationConfiguration): AuthenticationManager =
         config.authenticationManager

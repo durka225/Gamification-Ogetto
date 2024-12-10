@@ -15,18 +15,27 @@ class AuthController(
     private val authenticationService: AuthenticationService
 ) {
 
+
+    // Функция POST - запроса, которая аунтефицирует пользователя
+    // и возвращает токен для доступа к API.
+    // Принимает на вход модель AuthenticationRequest
     @PostMapping
     fun authenticate(@RequestBody authRequest: AuthenticationRequest): AuthenticationResponse =
         authenticationService.authentication(authRequest)
 
+
+    // Функция POST - запроса, которая генерирует новый токен для доступа к API
+    // Принимает RefreshTokenRequest, который содержит токен
+    // Возращает новый токен в теле TokenResponse
+    // Если токен недействителен, то выбрасывается исключение HTTP 403
     @PostMapping("/refresh")
-    fun refreshAccessToken(
-        @RequestBody request: RefreshTokenRequest
-    ): TokenResponse =
+    fun refreshAccessToken(@RequestBody request: RefreshTokenRequest): TokenResponse =
         authenticationService.refreshAccessToken(request.token)
             ?.mapToTokenResponse()
             ?: throw ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid refresh token!")
 
+
+    // Вспомогательная функция, которая преобразует токен в модель TokenResponse
     private fun String.mapToTokenResponse(): TokenResponse =
         TokenResponse(
             token = this

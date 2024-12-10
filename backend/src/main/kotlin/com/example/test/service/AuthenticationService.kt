@@ -12,6 +12,13 @@ import java.util.*
 
 
 @Service
+
+// Класс принимает следующие поля
+// AuthenticationManager - компонент Spring Security, который управляет аутентификацией пользователей
+// CustomUserDetailsService - сервис, который загружает данные о пользователе на основе email
+// TokenService - сервис, который отвечает за генерацию и валидацию токенов
+// JwtProperties - класс, который содержит настройки JWT токена
+// RefreshTokenRepository - репозиторий, который используется для хранения и извлечения токенов обновления
 class AuthenticationService(
     private val authManager: AuthenticationManager,
     private val userDetailsService: CustomUserDetailsService,
@@ -19,6 +26,10 @@ class AuthenticationService(
     private val jwtProperties: JwtProperties,
     private val refreshTokenRepository: RefreshTokenRepository,
 ) {
+
+    // Метод генерирует JWT токен для пользователя
+    // Принимает на вход модель AuthenticationRequest, а возращает 
+    // Ответ в виде модели AuthenticationResponse с двумя токенами, доступа и обновления
     fun authentication(authRequest: AuthenticationRequest): AuthenticationResponse {
         authManager.authenticate(
             UsernamePasswordAuthenticationToken(
@@ -39,7 +50,9 @@ class AuthenticationService(
         )
 
     }
-
+    // Метод для замены токена доступа с помощью токена обновления
+    // Принимает на вход старый JWT токен доступа 
+    // Возвращает новый JWT токен доступа
     fun refreshAccessToken(token: String): String? {
         val extractedEmail = tokenService.extractEmail(token)
 
@@ -56,12 +69,15 @@ class AuthenticationService(
         }
     }
 
-
+    // Метод генерации JWT токена доступа
+    // Принимает на вход модель UserDetails, а возвращает JWT токен доступа
     private fun generateAccessToken(user: UserDetails) = tokenService.generate(
         userDetails = user,
         expirationDate = Date(System.currentTimeMillis() + jwtProperties.accessTokenExpiration)
     )
 
+    // Метод генерации JWT токена обновления
+    // Принимает на вход модель UserDetails, а возвращает JWT токен обновления
     private fun generateRefreshToken(user: UserDetails) = tokenService.generate(
         userDetails = user,
         expirationDate = Date(System.currentTimeMillis() + jwtProperties.accessTokenExpiration)
