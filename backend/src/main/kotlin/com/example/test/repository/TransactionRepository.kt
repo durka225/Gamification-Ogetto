@@ -41,7 +41,7 @@ class TransactionRepository() {
     )
 
     fun addTransaction(transaction: Transaction): Boolean {
-        val maxId = Transactions.maxOfOrNull { it.id } ?: 0
+        val maxId = Transactions.maxOfOrNull { it.id } ?: -1
         val newTransaction = transaction.copy(id = maxId + 1)
         return Transactions.add(newTransaction)
     }

@@ -30,7 +30,7 @@ class SecurityConfiguration (
                     .permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/user")
                     .permitAll()
-                    .requestMatchers("/api/user**")
+                    .requestMatchers("/api/user/**", "/api/rewards/**")
                     .hasRole("admin")
                     .anyRequest()
                     .fullyAuthenticated()

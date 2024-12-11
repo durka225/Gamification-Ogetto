@@ -7,7 +7,6 @@ import org.springframework.stereotype.Repository
 @Repository
 class RefreshTokenRepository {
 
-
     // Приватное поле tokens, которое хранит:
     // ключ - токен, значение - UserDetails пользователя
     private val tokens = mutableMapOf<String, UserDetails>()
