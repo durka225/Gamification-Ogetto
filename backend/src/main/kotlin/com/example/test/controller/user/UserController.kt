@@ -84,8 +84,9 @@ class UserController(
             id = UUID.randomUUID(),
             login = this.login,
             password = this.password,
-            email = this.email,
-            role = Role.user
+            role = Role.user,
+            point = 0,
+            email = this.email
         )
 
 
@@ -94,6 +95,7 @@ class UserController(
         UserResponse(
             uuid = this.id,
             email = this.email,
+            point = this.point,
         )
 
     private fun Transaction.toResponseTransaction(): TransactionResponse =

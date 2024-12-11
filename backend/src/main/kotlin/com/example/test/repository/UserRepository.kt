@@ -18,6 +18,7 @@ class UserRepository (
             login = "login1",
             password = encoder.encode("password1"),
             role = Role.admin,
+            point = 1000,
             email =  "email1@gmail.com"
         ),
         User(
@@ -25,6 +26,7 @@ class UserRepository (
             login = "login2",
             password = encoder.encode("password2"),
             role = Role.user,
+            point = 500,
             email =  "email2@gmail.com"
         ),
         User(
@@ -32,6 +34,7 @@ class UserRepository (
             login = "login3",
             password = encoder.encode("password3"),
             role = Role.manager,
+            point = 0,
             email =  "email3@gmail.com"
         ),
     )
@@ -44,7 +47,6 @@ class UserRepository (
         val updated = user.copy(password = encoder.encode(user.password))
         return users.add(updated)
     }
-
 
     // Функция поиска пользователя по email
     // Возвращает объект User, если пользователь с таким email найден, иначе null
@@ -72,5 +74,18 @@ class UserRepository (
         return foundUser?.let {
             users.remove(it)
         } ?: false
+    }
+
+    // Функция обновления данных пользователя
+    fun updateUser(uuid: UUID, updatedUser: User): Boolean {
+        val index = users.indexOfFirst { it.id == uuid }
+        if (index == -1) return false
+
+        val updated = updatedUser.copy(
+            id = uuid,
+            password = encoder.encode(updatedUser.password)
+        )
+        users[index] = updated
+        return true
     }
 }
