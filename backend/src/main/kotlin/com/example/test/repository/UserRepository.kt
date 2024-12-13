@@ -54,6 +54,10 @@ class UserRepository (
         users
             .firstOrNull { it.email == email }
 
+    fun findByLogin(login: String): User? =
+        users
+            .firstOrNull { it.login == login }
+
     // Функция получения всех пользователей
     fun findAll(): List<User> = users
 

@@ -33,12 +33,12 @@ class AuthenticationService(
     fun authentication(authRequest: AuthenticationRequest): AuthenticationResponse {
         authManager.authenticate(
             UsernamePasswordAuthenticationToken(
-                authRequest.email,
+                authRequest.login,
                 authRequest.password
             )
         )
 
-        val user = userDetailsService.loadUserByUsername(authRequest.email)
+        val user = userDetailsService.loadUserByUsername(authRequest.login)
         val accessToken = generateAccessToken(user)
         val refreshToken = generateRefreshToken(user)
 

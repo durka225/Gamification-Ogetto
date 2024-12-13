@@ -14,9 +14,10 @@ class UserService (
     // Метод создания нового пользователя и добавления его в репозиторий пользователей
     // В будущем добавление в базу данных.
     fun createUser(user: User): User? {
-        val found = userRepository.findByEmail(user.email)
+        val foundEmail = userRepository.findByEmail(user.email)
+        val foundLogin = userRepository.findByLogin(user.login)
 
-        return if (found == null) {
+        return if (foundEmail == null && foundLogin == null) {
             userRepository.addUser(user)
             user
         } else null

@@ -1,6 +1,7 @@
-package com.example.test.controller.point
+package com.example.test.model
 
-data class PointsRequest (
+data class Point (
+    val id: Int,
     val login: String?,
     val points: Int?,
     val description: String?

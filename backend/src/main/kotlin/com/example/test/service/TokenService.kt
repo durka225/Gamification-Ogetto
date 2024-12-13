@@ -39,8 +39,12 @@ class TokenService(
             .signWith(secretKey)
             .compact()
 
-    // Метод проверки email пользователя с помощью токена
+    // Метод извлечения email пользователя с помощью токена
     fun extractEmail(token: String): String? =
+        getAllClaims(token)
+            .subject
+
+    fun extractLogin(token: String): String? =
         getAllClaims(token)
             .subject
 

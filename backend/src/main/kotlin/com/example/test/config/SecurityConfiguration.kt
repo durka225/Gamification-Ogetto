@@ -26,14 +26,23 @@ class SecurityConfiguration (
             .csrf { it.disable() }
             .authorizeHttpRequests {
                 it
-                    .requestMatchers("/api/auth", "/api/auth/refresh", "/error")
+                .requestMatchers("/api/auth", "/api/auth/refresh", "/error")
+                .permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/user")
                     .permitAll()
-                    .requestMatchers(HttpMethod.POST, "/api/user")
+                .requestMatchers("/api/points/add")
                     .permitAll()
-                    .requestMatchers("/api/user/**", "/api/rewards/**")
+                .requestMatchers(HttpMethod.GET, "/api/rewards")
+                    .permitAll()
+                .requestMatchers("/api/points/**")
                     .hasRole("admin")
-                    .anyRequest()
+                .requestMatchers("/api/rewards/**")
+                    .hasRole("admin")
+                .requestMatchers("/api/user/**")
+                    .hasRole("admin")
+                .anyRequest()
                     .fullyAuthenticated()
+            
             }
             .sessionManagement {
                 it.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
