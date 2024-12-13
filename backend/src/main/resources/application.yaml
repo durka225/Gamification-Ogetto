@@ -2,3 +2,11 @@ jwt:
   key: ${JWT_KEY}
   access-token-expiration: 3600000
   refresh-token-expiration: 86400000
+
+server:
+  port: 8443
+  ssl:
+    enabled: true
+    key-store: classpath:keystore.p12
+    key-store-password: ${KEY_SLL}
+    key-store-type: PKCS12
