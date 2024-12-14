@@ -2,6 +2,7 @@ package com.example.test.repository
 
 import com.example.test.model.Role
 import com.example.test.model.User
+import com.example.test.model.UserToActivity
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Repository
 import java.util.*
@@ -38,6 +39,8 @@ class UserRepository (
             email =  "email3@gmail.com"
         ),
     )
+
+    private val userToActivity = mutableListOf<UserToActivity>()
 
     // Функция добавления нового пользователя
     // Принимает на вход данные по модели User
@@ -92,4 +95,14 @@ class UserRepository (
         users[index] = updated
         return true
     }
+
+    fun addUserToActivity(uuid: UUID, activityId: Int): Boolean {
+        val toModel = UserToActivity(uuid, activityId)
+        if (!userToActivity.contains(toModel)) {
+            return userToActivity.add(toModel)
+        }
+        return false
+    }
+
+    fun getAllUserToActivity(): List<UserToActivity> = userToActivity
 }

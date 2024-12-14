@@ -42,6 +42,11 @@ class ActivityController(
             reward = this.reward
         )
 
+    @GetMapping("/activities-with-users")
+    fun getAllActivitiesWithUsers(): List<ActivitiesWithUsers> {
+        return activityService.getAllActivitiesWithUsers()
+    }
+
     private fun ActivityRequest.requestToModel(): Activity =
     Activity(
         id = 0,

@@ -3,12 +3,14 @@ package com.example.test.service
 // import com.example.test.controller.UserDeleteLogin
 import com.example.test.model.User
 import com.example.test.repository.UserRepository
+import com.example.test.repository.ActivityRepository
 import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
 class UserService (
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val activityRepository: ActivityRepository
 ) {
 
     // Метод создания нового пользователя и добавления его в репозиторий пользователей
@@ -37,4 +39,11 @@ class UserService (
     // В будущем удаление из базы данных
     fun deleteByUUID(uuid: UUID): Boolean =
         userRepository.deleteByUUID(uuid)
+
+    fun addUserToActivity(uuid: UUID, activityId: Int): Boolean {
+        userRepository.findByUUID(uuid) ?: return false
+        activityRepository.findById(activityId) ?: return false
+
+        return userRepository.addUserToActivity(uuid, activityId)
+    } 
 }

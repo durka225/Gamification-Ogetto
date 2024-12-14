@@ -76,6 +76,12 @@ class UserController(
         transactionService.findAllTransactions()
             .map { it.toResponseTransaction() }
 
+    @PostMapping("{uuid}/activities/{activityId}")
+    fun addUserToActivity(@PathVariable activityId: Int, @PathVariable uuid: UUID): Boolean =
+        userService.addUserToActivity(uuid, activityId)
+
+    
+
 
     // Функция преобразования запроса в модель User
     // По определённой форме
