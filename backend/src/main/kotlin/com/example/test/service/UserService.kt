@@ -6,6 +6,7 @@ import com.example.test.repository.UserRepository
 import com.example.test.repository.ActivityRepository
 import org.springframework.stereotype.Service
 import java.util.*
+import java.time.LocalDateTime
 
 @Service
 class UserService (
@@ -42,7 +43,8 @@ class UserService (
 
     fun addUserToActivity(uuid: UUID, activityId: Int): Boolean {
         userRepository.findByUUID(uuid) ?: return false
-        activityRepository.findById(activityId) ?: return false
+        val foundActivity = activityRepository.findById(activityId) ?: return false
+        if (foundActivity.dateStart.isBefore(LocalDateTime.now())) return false
 
         return userRepository.addUserToActivity(uuid, activityId)
     } 

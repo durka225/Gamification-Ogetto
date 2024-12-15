@@ -1,6 +1,7 @@
 package com.example.test.controller.activity
 
 import com.example.test.model.Activity
+import com.example.test.model.ActivityEnd
 import com.example.test.service.ActivityService
 
 import org.springframework.web.bind.annotation.RequestMapping
@@ -23,6 +24,10 @@ class ActivityController(
     fun getAllAcivites(): List<Activity> =
         activityService.getAllActivities()
 
+    @GetMapping("/end")
+    fun getAllActivitesEnd(): List<ActivityEnd> =
+        activityService.getAllActivitiesEnd()
+
     @PostMapping("/add")
     fun createActivity(@RequestBody activity: ActivityRequest): Boolean {
         val request = activity.requestToModel()
@@ -39,11 +44,14 @@ class ActivityController(
         Activity(
             id = id_request,
             title = this.title,
-            reward = this.reward
+            reward = this.reward,
+            dateStart = this.dateStart,
+            dateEnd = this.dateEnd
         )
 
     @GetMapping("/activities-with-users")
     fun getAllActivitiesWithUsers(): List<ActivitiesWithUsers> {
+        activityService.addActivitiesWithUsers()
         return activityService.getAllActivitiesWithUsers()
     }
 
@@ -51,6 +59,8 @@ class ActivityController(
     Activity(
         id = 0,
         title = this.title,
-        reward = this.reward
+        reward = this.reward,
+        dateStart = this.dateStart,
+        dateEnd = this.dateEnd
     )
 }

@@ -42,6 +42,8 @@ class UserRepository (
 
     private val userToActivity = mutableListOf<UserToActivity>()
 
+    
+
     // Функция добавления нового пользователя
     // Принимает на вход данные по модели User
     // В переменную update записывает список User с шифрованным паролем

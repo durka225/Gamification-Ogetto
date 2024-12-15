@@ -4,9 +4,13 @@ package com.example.test.service
 import com.example.test.controller.point.PointsRequest
 import com.example.test.repository.UserRepository
 import com.example.test.repository.PointRepository
+import com.example.test.repository.ActivityRepository
 import com.example.test.model.Transaction
 import com.example.test.model.TransactionType
 import com.example.test.model.Point
+import com.example.test.model.ActivityEnd
+import com.example.test.controller.activity.ActivitiesWithUsers 
+import com.example.test.controller.activity.ActivityStatus
 
 import org.springframework.stereotype.Service
 
@@ -17,10 +21,12 @@ import java.time.format.DateTimeFormatter
 @Service
 class PointService(
     private val tokenService: TokenService,
+    private val activityService: ActivityService,
     private val userDetailsService: CustomUserDetailsService,
     private val userRepository: UserRepository,
     private val transactionService: TransactionService,
-    private val pointRepository: PointRepository
+    private val pointRepository: PointRepository,
+    private val activityRepository: ActivityRepository
 ) {
 
     fun addApplication(application: Point, token: String): Boolean {
@@ -65,5 +71,30 @@ class PointService(
 
     fun getById(id: Int): Point? =
         pointRepository.findById(id)
-    
+
+    fun addCompletedActivitiesRequest(): Boolean {
+        val activityEnds = activityService.getAllActivitiesEnd()
+        val activityWithUser = activityService.getAllActivitiesWithUsers()
+
+        activityEnds.forEach { activityEnd ->
+            activityWithUser.forEach { activityWithUsers ->
+                
+                    if (activityEnd.id == activityWithUsers.activity.id &&
+                        activityWithUsers.status == ActivityStatus.NotProcessed) {
+                        activityWithUsers.users.forEach { Users -> 
+                            val foundLogin = userRepository.findByUUID(Users.userId)!!.login
+                            val application = Point (
+                                id = 0,
+                                login = foundLogin,
+                                points = activityWithUsers.activity.reward,
+                                description = activityWithUsers.activity.title
+                            )
+                            pointRepository.addApplication(application)
+                    }
+                    activityRepository.updateActivityStatus(activityWithUsers.activity.id, ActivityStatus.Processed)
+                }
+            }
+        }
+        return true
+    }
 }

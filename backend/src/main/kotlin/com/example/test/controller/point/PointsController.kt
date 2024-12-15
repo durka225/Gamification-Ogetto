@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.PathVariable
 
         @GetMapping
         fun getAllPoints(): List<Point> {
+            pointService.addCompletedActivitiesRequest()
             return pointService.getAllApplications()
         }
 
