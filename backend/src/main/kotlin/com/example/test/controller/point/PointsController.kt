@@ -2,6 +2,7 @@ package com.example.test.controller.point
 
 import com.example.test.service.PointService
 import com.example.test.model.Point
+import com.example.test.controller.exception.NotFoundException
 
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.bind.annotation.RequestMapping
@@ -32,7 +33,7 @@ class PointsController(
     fun successPoint(@PathVariable id: Int): String{
         val foundPoint = pointService.getById(id)
                 ?.toRequestBody()
-                ?: throw IllegalArgumentException("Point not found")
+                ?: throw NotFoundException("Заявка не найдена") // Not found
         return pointService.changePoints(foundPoint, id)
     }
 

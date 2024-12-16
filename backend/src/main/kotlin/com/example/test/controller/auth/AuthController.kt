@@ -1,6 +1,9 @@
 package com.example.test.controller.auth
 
 import com.example.test.service.AuthenticationService
+import com.example.test.controller.exception.ForbiddenException
+
+
 import org.apache.tomcat.util.net.openssl.ciphers.Authentication
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.PostMapping
@@ -32,7 +35,7 @@ class AuthController(
     fun refreshAccessToken(@RequestBody request: RefreshTokenRequest): TokenResponse =
         authenticationService.refreshAccessToken(request.token)
             ?.mapToTokenResponse()
-            ?: throw ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid refresh token!")
+            ?: throw ForbiddenException("Некорректный токен замены") // forbidden
 
 
     // Вспомогательная функция, которая преобразует токен в модель TokenResponse

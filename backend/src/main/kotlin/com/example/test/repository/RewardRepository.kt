@@ -1,8 +1,10 @@
 package com.example.test.repository
 
 import com.example.test.model.Reward
-import org.springframework.stereotype.Repository
+import com.example.test.controller.exception.NotFoundException
 import com.example.test.controller.rewards.RewardDeleteRequest
+
+import org.springframework.stereotype.Repository
 
 @Repository
 class RewardRepository() {
@@ -46,6 +48,6 @@ class RewardRepository() {
         
         return foundReward?.let {
             rewards.remove(it)
-        } ?: false
+        } ?: throw NotFoundException("Награда с указанным ID (${Request.id}) не найдена.") // Not Found
     }
 }

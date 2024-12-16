@@ -3,6 +3,9 @@ package com.example.test.controller.rewards
 import com.example.test.model.Reward
 import com.example.test.repository.RewardRepository
 import com.example.test.service.RewardService
+import com.example.test.controller.exception.ApiRequestException
+import com.example.test.controller.exception.NotFoundException
+
 
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.bind.annotation.RequestMapping
@@ -35,7 +38,7 @@ class RewardsController(
             reward = rewardRequest.toModel()
         )
             ?.toResponseReward()
-            ?: throw  ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot create a reward.")
+            ?: throw ApiRequestException("Не удалосб создать награду.") // Bad Request
             
     @DeleteMapping("/delete")
     fun deleteReward(@RequestBody requestDelete: RewardDeleteRequest): ResponseEntity<Boolean> {
@@ -45,7 +48,7 @@ class RewardsController(
             ResponseEntity.noContent()
                 .build()
         else
-            throw  ResponseStatusException(HttpStatus.NOT_FOUND, "Cannot find a reward.")
+            throw NotFoundException("Не удалось найти награду.") // Not found
     }
 
 

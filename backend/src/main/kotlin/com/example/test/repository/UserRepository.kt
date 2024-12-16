@@ -3,6 +3,7 @@ package com.example.test.repository
 import com.example.test.model.Role
 import com.example.test.model.User
 import com.example.test.model.UserToActivity
+import com.example.test.controller.exception.NotFoundException
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Repository
 import java.util.*
@@ -82,13 +83,13 @@ class UserRepository (
 
         return foundUser?.let {
             users.remove(it)
-        } ?: false
+        } ?: throw NotFoundException("Пользователь с указанным UUID (${uuid}) не найден.") // Not Found
     }
 
     // Функция обновления данных пользователя
     fun updateUser(uuid: UUID, updatedUser: User): Boolean {
         val index = users.indexOfFirst { it.id == uuid }
-        if (index == -1) return false
+        if (index == -1) throw NotFoundException("Пользователь с указанным UUID (${uuid}) не найден") // Not Found
 
         val updated = updatedUser.copy(
             id = uuid,
@@ -103,7 +104,7 @@ class UserRepository (
         if (!userToActivity.contains(toModel)) {
             return userToActivity.add(toModel)
         }
-        return false
+        throw NotFoundException("Пользователь с UUID ($uuid) уже добавлен в активность с ID ($activityId).") // Not Found
     }
 
     fun getAllUserToActivity(): List<UserToActivity> = userToActivity

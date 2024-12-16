@@ -5,6 +5,8 @@ import com.example.test.model.ActivityEnd
 import com.example.test.model.UserToActivity
 import com.example.test.controller.activity.ActivitiesWithUsers
 import com.example.test.controller.activity.ActivityStatus
+import com.example.test.controller.exception.ApiRequestException
+import com.example.test.controller.exception.InternalServerErrorException
 
 import org.springframework.stereotype.Repository
 
@@ -24,8 +26,12 @@ class ActivityRepository () {
     fun addActivity(activity: Activity): Boolean {
         val maxId = activities.maxOfOrNull { it.id } ?: -1
         val updateActivity = activity.copy(id = maxId + 1)
-        if (!activity.dateEnd.isAfter(activity.dateStart)) return false
-        if (!categories.any { it == activity.category }) return false
+        if (!activity.dateEnd.isAfter(activity.dateStart))
+            throw ApiRequestException("Дата завершения активности (${activity.dateEnd})" +
+            " должна быть позже даты начала (${activity.dateStart}).") // Bad Request
+        if (!categories.any { it == activity.category })
+            throw ApiRequestException("Категория активности (${activity.category}) недействительна." +
+            " Допустимые категории: ${categories.joinToString(", ")}.") // Bad Request
         return activities.add(updateActivity)
     }
 
@@ -80,13 +86,10 @@ class ActivityRepository () {
     
     private fun addActivityEnd(activity: Activity): Boolean {
         val newObject = ActivityEnd(id = activity.id, title = activity.title, category = activity.category)
-        return try {
-            activityEnd.add(newObject)
-            true
-        } catch (e: Exception) {
-            println("Error adding activity to end: ${e.message}")
-            false
+        if (!activityEnd.add(newObject)) {
+            throw InternalServerErrorException("Не удалось добавить законченную активность.") // Internal Server Error
         }
+        return true
     }
     
 
@@ -99,19 +102,19 @@ class ActivityRepository () {
 
     fun updateActivityUsers(activityId: Int, newUsers: List<UserToActivity>): Boolean {
         val index = activitiesWithUsers.indexOfFirst { it.activity.id == activityId }
-        if (index == -1) return false
+        if (index == -1) InternalServerErrorException("Не удалось найти активность с ID ${activityId}") // Internal Server Error
         activitiesWithUsers[index] = activitiesWithUsers[index].copy(users = newUsers)
         return true
     }
 
     fun updateActivityStatus(activityId: Int, newStatus: ActivityStatus): Boolean {
         val activityWithUsers = activitiesWithUsers.firstOrNull { it.activity.id == activityId }
-        return if (activityWithUsers != null) {
+        if (activityWithUsers != null) {
             activityWithUsers.status = newStatus
-            true
         } else {
-            false
+            InternalServerErrorException("Не удалось обновить статус активности") // Internal Server Error
         }
+        return true
     }
 
     fun addCategory(newCategory: String): Boolean =

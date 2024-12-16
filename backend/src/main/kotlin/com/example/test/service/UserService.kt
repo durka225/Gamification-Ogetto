@@ -4,6 +4,9 @@ package com.example.test.service
 import com.example.test.model.User
 import com.example.test.repository.UserRepository
 import com.example.test.repository.ActivityRepository
+import com.example.test.controller.exception.ApiRequestException
+import com.example.test.controller.exception.NotFoundException
+
 import org.springframework.stereotype.Service
 import java.util.*
 import java.time.LocalDateTime
@@ -43,8 +46,10 @@ class UserService (
 
     fun addUserToActivity(uuid: UUID, activityId: Int): Boolean {
         userRepository.findByUUID(uuid) ?: return false
-        val foundActivity = activityRepository.findById(activityId) ?: return false
-        if (foundActivity.dateStart.isBefore(LocalDateTime.now())) return false
+        val foundActivity = activityRepository.findById(activityId) 
+            ?: throw NotFoundException("Активность не найдена") // Not Found
+        if (foundActivity.dateStart.isBefore(LocalDateTime.now())) 
+            throw ApiRequestException("Дата начала раньше текущего времени") // Bad Request
 
         return userRepository.addUserToActivity(uuid, activityId)
     } 

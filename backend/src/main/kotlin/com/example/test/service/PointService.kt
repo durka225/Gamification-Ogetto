@@ -11,6 +11,8 @@ import com.example.test.model.Point
 import com.example.test.model.ActivityEnd
 import com.example.test.controller.activity.ActivitiesWithUsers 
 import com.example.test.controller.activity.ActivityStatus
+import com.example.test.controller.exception.ApiRequestException
+import com.example.test.controller.exception.NotFoundException
 
 import org.springframework.stereotype.Service
 
@@ -30,7 +32,8 @@ class PointService(
 ) {
 
     fun addApplication(application: Point, token: String): Boolean {
-        val login = tokenService.extractLogin(token) ?: return false
+        val login = tokenService.extractLogin(token) 
+            ?: throw ApiRequestException("Токен некорректный.") // Bad Request
         var updateApplication = application.copy (login = login)
         return pointRepository.addApplication(updateApplication)
     }
@@ -42,32 +45,38 @@ class PointService(
     fun getAllApplications(): List<Point> = pointRepository.getAllApplications()
 
     fun changePoints(pointsRequest: PointsRequest, id: Int): String {
-        val login = pointsRequest.login ?: return "Token is missing or null"
-        val points = pointsRequest.points ?: return "Points are missing or null"
-        val description = pointsRequest.description ?: return "Description is missing or null"
-        
-        // val login = tokenService.extractLogin(token) ?: return "Login is missing or null"
-        val user = userRepository.findByLogin(login) ?: return "User not found for the given email"
+        val login = pointsRequest.login 
+                ?: throw ApiRequestException("Токен отсутствует или равен null.") // Bad Request
+        val points = pointsRequest.points 
+                ?: throw ApiRequestException("Баллы отсутствуют или равны null.") // Bad Request
+        val description = pointsRequest.description 
+                ?: throw ApiRequestException("Описание отсутствует или равно null.") // Bad Request
+    
+        val user = userRepository.findByLogin(login) 
+                ?: throw NotFoundException("Пользователь не найден по указанному логину: $login.") // Not Found
+
     
         if (user.point + points < 0) {
-            return "Insufficient points: operation would result in negative balance"
-        } else {
-            val currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-            user.point += points
-    
-            val newTransaction = Transaction(
-                id = 0,
-                date = currentDate,
-                description = description,
-                type = if (points >= 0) TransactionType.Accrual else TransactionType.Deduction
-            )
-    
-            transactionService.createTransaction(newTransaction)
-            userRepository.updateUser(user.id, user)
-            pointRepository.delApplicationById(id)
-            return "Points successfully updated"
+            throw ApiRequestException("Недостаточно баллов: операция приведет к отрицательному балансу.") // Bad Request
         }
+    
+        val currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+        user.point += points
+    
+        val newTransaction = Transaction(
+            id = 0,
+            date = currentDate,
+            description = description,
+            type = if (points >= 0) TransactionType.Accrual else TransactionType.Deduction
+        )
+    
+        transactionService.createTransaction(newTransaction)
+        userRepository.updateUser(user.id, user)
+        pointRepository.delApplicationById(id)
+    
+        return "Баллы пользователя успешно обновлены."
     }
+    
 
     fun getById(id: Int): Point? =
         pointRepository.findById(id)

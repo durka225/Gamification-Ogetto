@@ -5,6 +5,8 @@ import com.example.test.repository.UserRepository
 import com.example.test.model.Activity
 import com.example.test.model.ActivityEnd
 import com.example.test.controller.activity.ActivitiesWithUsers
+import com.example.test.controller.exception.ApiRequestException
+import com.example.test.controller.exception.InternalServerErrorException
 import com.example.test.controller.activity.ActivityStatus
 
 import org.springframework.stereotype.Service
@@ -27,7 +29,7 @@ class ActivityService(
     fun updateActivity(id: Int, update: Activity): Boolean = 
         activityRepository.updateActivity(id, update)
 
-    fun addActivitiesWithUsers(): List<Boolean> {
+        fun addActivitiesWithUsers(): List<Boolean> {
             val activities = activityRepository.findAllActivities()
             val users = userRepository.getAllUserToActivity()
         
@@ -35,20 +37,30 @@ class ActivityService(
                 val activityUsers = users.filter { it.activityId == activity.id }
                 val existingActivityWithUsers = activityRepository.findActivityWithUsersById(activity.id)
         
-                if (existingActivityWithUsers != null &&
-                    existingActivityWithUsers.status == ActivityStatus.NotProcessed) {
-                    if (existingActivityWithUsers.users != activityUsers) {
-                        activityRepository.updateActivityUsers(activity.id, activityUsers)
-                        true
-                    } else {
-                        false
+                when {
+                    existingActivityWithUsers != null && existingActivityWithUsers.status == ActivityStatus.NotProcessed -> {
+                        if (existingActivityWithUsers.users != activityUsers) {
+                            activityRepository.updateActivityUsers(activity.id, activityUsers)
+                            true
+                        } else {
+                            false
+                        }
                     }
-                } else {
-                    activityRepository.addActivityWithUsers(ActivitiesWithUsers(activity, activityUsers))
-                    true
+                    existingActivityWithUsers != null && existingActivityWithUsers.status != ActivityStatus.NotProcessed -> {
+                        throw ApiRequestException("Статус активности с ID (${activity.id}) не позволяет обработку.")
+                        // Bad Request
+                    }
+                    else -> {
+                        if (!activityRepository.addActivityWithUsers(ActivitiesWithUsers(activity, activityUsers))) {
+                            throw InternalServerErrorException("Ошибка при добавлении активности с ID (${activity.id}) и пользователями.")
+                            // Internal Server Error
+                        }
+                        true
+                    }
                 }
             }
         }
+        
         
     fun getAllActivitiesWithUsers(): List<ActivitiesWithUsers> = 
         activityRepository.getAllActivitiesWithUsers()

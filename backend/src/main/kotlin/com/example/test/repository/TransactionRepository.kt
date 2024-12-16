@@ -1,8 +1,11 @@
 package com.example.test.repository
 
-import org.springframework.stereotype.Repository
 import com.example.test.model.Transaction
 import com.example.test.model.TransactionType
+import com.example.test.controller.exception.NotFoundException
+
+import org.springframework.stereotype.Repository
+
 
 @Repository
 class TransactionRepository() {
@@ -57,7 +60,7 @@ class TransactionRepository() {
         
         return foundTransaction?.let {
             Transactions.remove(it)
-        } ?: false
+        } ?: throw NotFoundException("Награда с указанным ID (${Request}) не найдена.") // Not Found
     }
 
 }

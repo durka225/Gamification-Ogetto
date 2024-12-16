@@ -5,6 +5,10 @@ import com.example.test.model.User
 import com.example.test.model.Transaction
 import com.example.test.service.UserService
 import com.example.test.service.TransactionService
+import com.example.test.controller.exception.ApiRequestException
+import com.example.test.controller.exception.NotFoundException
+
+
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatusCode
 import org.springframework.http.ResponseEntity
@@ -35,7 +39,7 @@ class UserController(
             user = userRequest.toModel()
         )
             ?.toResponseUser()
-            ?: throw  ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot create a user.")
+            ?: throw  ApiRequestException("Не удалось создать пользователя.") // Bad Request
 
     // Функция GET - запроса для получения всего списка пользователя
     // Преобразует список моделей User в список ответов UserResponse
@@ -53,7 +57,7 @@ class UserController(
     fun findByUUID(@PathVariable uuid: UUID): UserResponse =
         userService.findByUUID(uuid)
             ?.toResponseUser()
-            ?: throw  ResponseStatusException(HttpStatus.NOT_FOUND, "Cannot find a user.")
+            ?: throw  NotFoundException("Не удалось найти пользователя.") // Not found
 
 
     // Функция DELETE - запроса для удаления пользователя по UUID
@@ -68,7 +72,7 @@ class UserController(
             ResponseEntity.noContent()
                 .build()
         else
-            throw  ResponseStatusException(HttpStatus.NOT_FOUND, "Cannot find a user.")
+            throw  NotFoundException("Не удалось найти пользователя.") // Not found
     }
 
     @GetMapping("/transactions")
