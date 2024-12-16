@@ -44,6 +44,7 @@ class ActivityController(
         Activity(
             id = id_request,
             title = this.title,
+            category = this.category,
             reward = this.reward,
             dateStart = this.dateStart,
             dateEnd = this.dateEnd
@@ -60,7 +61,16 @@ class ActivityController(
         id = 0,
         title = this.title,
         reward = this.reward,
+        category = this.category,
         dateStart = this.dateStart,
         dateEnd = this.dateEnd
     )
+
+    @PostMapping("/newCategory")
+    fun createCategory(@RequestBody newCategory: String): Boolean =
+        activityService.addNewCategory(newCategory)
+
+    @GetMapping("/category")
+    fun getAllCategory(): List<String> =
+        activityService.getAllCategory()
 }

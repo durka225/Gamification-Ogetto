@@ -52,4 +52,10 @@ class ActivityService(
         
     fun getAllActivitiesWithUsers(): List<ActivitiesWithUsers> = 
         activityRepository.getAllActivitiesWithUsers()
+
+    fun addNewCategory(newCategory: String): Boolean =
+        activityRepository.addCategory(newCategory)
+
+    fun getAllCategory(): List<String> =
+        activityRepository.getCategory()
 }

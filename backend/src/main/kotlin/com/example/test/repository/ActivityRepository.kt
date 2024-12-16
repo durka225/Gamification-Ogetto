@@ -19,10 +19,13 @@ class ActivityRepository () {
 
     private val activitiesWithUsers = mutableListOf<ActivitiesWithUsers>()
 
+    private val categories = mutableListOf<String>()
+
     fun addActivity(activity: Activity): Boolean {
         val maxId = activities.maxOfOrNull { it.id } ?: -1
         val updateActivity = activity.copy(id = maxId + 1)
         if (!activity.dateEnd.isAfter(activity.dateStart)) return false
+        if (!categories.any { it == activity.category }) return false
         return activities.add(updateActivity)
     }
 
@@ -76,7 +79,7 @@ class ActivityRepository () {
     }
     
     private fun addActivityEnd(activity: Activity): Boolean {
-        val newObject = ActivityEnd(id = activity.id, title = activity.title)
+        val newObject = ActivityEnd(id = activity.id, title = activity.title, category = activity.category)
         return try {
             activityEnd.add(newObject)
             true
@@ -110,4 +113,10 @@ class ActivityRepository () {
             false
         }
     }
+
+    fun addCategory(newCategory: String): Boolean =
+        categories.add(newCategory)
+        
+    fun getCategory(): List<String> = categories
+
 }
