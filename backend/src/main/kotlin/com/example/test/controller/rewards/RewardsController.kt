@@ -5,6 +5,7 @@ import com.example.test.repository.RewardRepository
 import com.example.test.service.RewardService
 import com.example.test.controller.exception.ApiRequestException
 import com.example.test.controller.exception.NotFoundException
+import com.test.example.controller.rewards.RewardCreatePointRequest
 
 
 import org.springframework.web.bind.annotation.RestController
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestHeader
 
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatusCode
@@ -50,6 +52,14 @@ class RewardsController(
         else
             throw NotFoundException("Не удалось найти награду.") // Not found
     }
+
+    @PostMapping("/createPoint")
+    fun createPoint(@RequestBody requestCreatePoint: RewardCreatePointRequest, 
+                    @RequestHeader("Authorization") token: String): Boolean {
+                        val updateToken = token.substringAfter("Bearer ") 
+                        return rewardService.createPoint(requestCreatePoint, updateToken)
+                    }
+        
 
 
     fun Reward.toResponseReward(): RewardsResponse =

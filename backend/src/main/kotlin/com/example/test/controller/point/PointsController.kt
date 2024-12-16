@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.PathVariable
 
 
@@ -19,8 +20,12 @@ class PointsController(
 ) {
 
     @PostMapping("/add")
-    fun addPoint(@RequestBody request: PointsRequestAdd): Boolean {
-        return pointService.addApplication(request.toModelPoint(), request.token)
+    fun addPoint(
+        @RequestBody request: PointsRequestAdd,
+        @RequestHeader("Authorization") token: String
+    ): Boolean {
+        val updateToken = token.substringAfter("Bearer ")
+        return pointService.addApplication(request.toModelPoint(), updateToken)
     }
 
     @GetMapping
