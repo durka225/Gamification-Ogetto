@@ -3,15 +3,19 @@ import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { Fonts } from '../../assets/fonts/Fonts';
 import Colors from '../../assets/Colors'
+
 const LoginScreen = () => {
   const navigation = useNavigation();
 
+  let formEmailStatus = false;
+  let formPasswordStatus = false;
+  let boolStatusFormsLogin = false;
+  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [checkEmail, setCheckEmail] = useState(false);
 
   const handleRegistration = () => {
-    navigation.navigate("Home");
     navigation.navigate("Registration");
   };
 
@@ -25,6 +29,10 @@ const LoginScreen = () => {
     setCheckEmail(!re.test(text));
   };
 
+  !checkEmail ? formEmailStatus = true : formEmailStatus = false;
+  password.length > 7 ? formPasswordStatus = true : formPasswordStatus = false;
+  formEmailStatus && formPasswordStatus? boolStatusFormsLogin = true : boolStatusFormsLogin = false;
+
   const handleLogin = () => {
     if (!checkEmail && email && password) {
       navigation.navigate("Main");
@@ -35,37 +43,55 @@ const LoginScreen = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.formContainer}>
-        <View style={styles.inputContainer}>
-          <TextInput
-            value={email}
-            onChangeText={(text) => handleCheckEmail(text)}
-            style={[styles.textInput]}
-            placeholder="Логин или почта"
-            placeholderTextColor= {Colors.gray}
-            keyboardType="email-address"
+      <View style={styles.inputContainer}>
+        <TextInput
+          value={email}
+          onChangeText={(text) => handleCheckEmail(text)}
+          style={[styles.textInput]}
+          placeholder="Логин или почта"
+          placeholderTextColor= {Colors.gray}
+          keyboardType="email-address"
+        />
+        {email === '' ? (
+          <Image
+            style={{ position: 'absolute', left: '92%', top: '35%' }}
+            source={require('../../assets/images/userIcon.png')}
           />
-          <Image style = {{position: 'absolute', left: '92%', top: '40%'}} source={require('../../assets/images/userIcon.png')}/>
-        </View>
-        {checkEmail ? <Text style={styles.wrongText}>Некорректный ввод почты</Text> : <Text> </Text>}
-        <View style={styles.inputContainer}>
-          <TextInput
-            onChangeText={(text) => setPassword(text)}
-            value={password}
-            secureTextEntry={true}
-            style={styles.textInput}
-            placeholder="Пароль"
-            placeholderTextColor= {Colors.gray}
+        ) : formEmailStatus ? (
+          <Image
+            style={{ position: 'absolute', left: '92%', top: '35%' }}
+            source={require('../../assets/images/correctFormIcon.png')}
           />
-          <Image style = {{position: 'absolute', left: '92%', top: '40%'}} source={require('../../assets/images/passwordIcon.png')}/>
-        </View>
-        <View style={{marginLeft: '64%'}}>
-          <TouchableOpacity style = {{ width: '100%' }}>
-            <Text onPress={handleRegistration} style={{fontSize: 13, color: Colors.black, fontFamily: Fonts.MontserratBold, marginLeft: '3%', marginTop: '5%' }}>
-              Забыли пароль?
-            </Text>
-          </TouchableOpacity>
-        </View>
+        ) : (
+          <Image
+            style={{ position: 'absolute', left: '92%', top: '35%' }}
+            source={require('../../assets/images/userIcon.png')}
+          />
+        )}
+      </View>
+      {checkEmail ? <Text style={styles.wrongText}>Некорректный ввод почты</Text> : <Text> </Text>}
+      <View style={styles.inputContainer}>
+        <TextInput
+          onChangeText={(text) => setPassword(text)}
+          value={password}
+          secureTextEntry={true}
+          style={styles.textInput}
+          placeholder="Пароль"
+          placeholderTextColor= {Colors.gray}
+        />
+        {formPasswordStatus ? 
+          <Image  style = {{position: 'absolute', left: '92%', top: '35%'}}
+                  source= {require('../../assets/images/correctFormIcon.png')}/> : 
+          <Image  style = {{position: 'absolute', left: '92%', top: '35%'}}
+                  source= {require('../../assets/images/passwordIcon.png')}/>
+        }
+      </View>
+      <View style={{marginLeft: '64%'}}>
+        <TouchableOpacity style = {{ width: '100%' }}>
+          <Text onPress={handleRegistration} style={{fontSize: 13, color: Colors.black, fontFamily: Fonts.MontserratBold, marginLeft: '3%', marginTop: '5%' }}>
+            Забыли пароль?
+          </Text>
+        </TouchableOpacity>
       </View>
       <Text style = {{textAlign: 'center', marginTop: 77, marginBottom: 123, fontSize: 15, fontFamily: Fonts.Montserrat}}>или войдите через</Text>
       <Image style = {{position: 'absolute', left: '32%', top: '52%'}} source={require('../../assets/images/googleIcon.png')}/>
@@ -76,15 +102,16 @@ const LoginScreen = () => {
         <TouchableOpacity
           style={[
             styles.loginButton,
-            { backgroundColor: Colors.orange },
+            { backgroundColor: boolStatusFormsLogin ? Colors.orange : 'rgba(235, 200, 0, 0.45)' },
           ]}
+          disabled = {!boolStatusFormsLogin}
           activeOpacity={1}
           onPress={handleLogin}
         >
-          <Text style={styles.loginText}>ВОЙТИ</Text>
+          <Text style={[styles.loginText, {color: boolStatusFormsLogin ?  Colors.black : 'rgba(0, 0, 0, 0.34)'}]}>ВОЙТИ</Text>
         </TouchableOpacity>
       </View>
-      <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 15 }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'center', top: 18 }}>
         <Text style={{ fontSize: 12, fontFamily: Fonts.Montserrat }}>Нет аккаунта?</Text>
         <TouchableOpacity>
           <Text onPress={handleRegistration} style={{ fontSize: 12, color: Colors.black, fontFamily: Fonts.MontserratBold, marginLeft: 5 }}>
@@ -101,8 +128,16 @@ export default LoginScreen;
 const styles = StyleSheet.create({
   container: {
     justifyContent: 'center',
+    alignItems: 'center',
     flex: 1,
-    top: '15%'
+    top: '8%',
+  },
+  background: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    height: '50%',
   },
   formContainer: {
     alignItems: 'center',
@@ -130,10 +165,10 @@ const styles = StyleSheet.create({
   },
   loginContainer: {
     flexDirection: 'row',
-    borderRadius: 50,
-    width: '90%',
-    height: '10%',
-    marginLeft: '5%',
+    borderRadius: 70,
+    width: 346,
+    height: 73,
+    top: 5,
   },
   wrongText: {
     fontSize: 10,

@@ -6,7 +6,6 @@ import Colors from '../../assets/Colors'
 const RegistrationScreen = () => {
   const navigation = useNavigation();
   const handleLogin = () => {
-    navigation.navigate("Home");
     navigation.navigate("Login");
   }  
 
@@ -99,57 +98,81 @@ const RegistrationScreen = () => {
   };
   return (
     <View style={styles.container}>
-      <View style = {{alignItems: 'center'}}>
-        <Text style = {{fontSize: 36, fontFamily: Fonts.Montserrat, width: '70%'}}>Регистрация</Text>
+      <View style = {{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 120}}>
+        <TouchableOpacity onPress = { () => navigation.goBack() } activeOpacity = {1} style = {{position: 'absolute', right: 240}}>
+          <Image source={require('../../assets/images/backIcon.png')}/>
+        </TouchableOpacity>
+        <View style = {{alignItems: 'center'}}>
+          <Text style = {{ fontSize: 36, fontFamily: Fonts.Montserrat}}>Регистрация</Text>
+        </View>
       </View>
-      <View style={styles.formContainer}>
-        <View style={styles.inputContainer}>
-          <TextInput
-            onChangeText={(text) => handleUsernameChange(text)}
-            value={username}
-            style={styles.textInput}
-            placeholder="Введите имя пользователя"
-            placeholderTextColor= {Colors.gray}
-          />
-          <Image style = {{position: 'absolute', left: '92%', top: '40%'}} source={require('../../assets/images/userIcon.png')}/>
-        </View>
-        {usernameError ? <Text style={styles.wrongText}>{usernameError}</Text> : <Text> </Text>}
-        <View style={styles.inputContainer}>
-          <TextInput
-            value={email}
-            onChangeText={(text) => handleEmailChange(text)}
-            style={[styles.textInput]}
-            placeholder="Введите email"
-            placeholderTextColor= {Colors.gray}
-            keyboardType="email-address"
-          />
-          <Image style = {{position: 'absolute', left: '92%', top: '40%'}} source={require('../../assets/images/emailIcon.png')}/>
-        </View>
-        {emailError ? <Text style={styles.wrongText}>Некорректный ввод почты</Text> : <Text> </Text>}
-        <View style={styles.inputContainer}>
-          <TextInput
-            onChangeText={(text) => handlePasswordChange(text)}
-            value={password}
-            secureTextEntry={true}
-            style={styles.textInput}
-            placeholder="Введите пароль"
-            placeholderTextColor = {Colors.gray}
-          />
-          <Image style = {{position: 'absolute', left: '92%', top: '40%'}} source={require('../../assets/images/passwordIcon.png')}/>
-        </View>
-        {passwordError ? <Text style={styles.wrongText}>{passwordError}</Text> : <Text> </Text>}
-        <View style={styles.inputContainer}>
-          <TextInput
-            onChangeText={(text) => handlePasswordChange(text)}
-            value={password}
-            secureTextEntry={true}
-            style={styles.textInput}
-            placeholder="Введите пароль"
-            placeholderTextColor = {Colors.gray}
-          />
-          <Image style = {{position: 'absolute', left: '92%', top: '40%'}} source={require('../../assets/images/passwordIcon.png')}/>
-        </View>
-        {passwordError ? <Text style={styles.wrongText}>{passwordError}</Text> : <Text> </Text>}
+      <View style={styles.inputContainer}>
+        <TextInput
+          onChangeText={(text) => handleUsernameChange(text)}
+          value={username}
+          style={styles.textInput}
+          placeholder="Введите имя пользователя"
+          placeholderTextColor= {Colors.gray}
+        />
+        <Image style = {{position: 'absolute', left: '92%', top: '40%'}} source={require('../../assets/images/userIcon.png')}/>
+      </View>
+      <View style = {{textAlign: 'center'}}>
+        {usernameError ? 
+        <Text style={styles.wrongText}>
+          {usernameError}
+        </Text> : <Text> </Text>}
+      </View>
+      <View style={styles.inputContainer}>
+        <TextInput
+          value={email}
+          onChangeText={(text) => handleEmailChange(text)}
+          style={[styles.textInput]}
+          placeholder="Введите email"
+          placeholderTextColor= {Colors.gray}
+          keyboardType="email-address"
+        />
+        <Image style = {{position: 'absolute', left: '92%', top: '40%'}} source={require('../../assets/images/emailIcon.png')}/>
+      </View>
+      <View style = {{textAlign: 'center'}}>
+        {emailError ?
+        <Text style={styles.wrongText}>
+            Некорректный ввод почты
+        </Text>
+        : <Text> </Text>}
+      </View>
+      <View style={styles.inputContainer}>
+        <TextInput
+          onChangeText={(text) => handlePasswordChange(text)}
+          value={password}
+          secureTextEntry={true}
+          style={styles.textInput}
+          placeholder="Введите пароль"
+          placeholderTextColor = {Colors.gray}
+        />
+        <Image style = {{position: 'absolute', left: '92%', top: '40%'}} source={require('../../assets/images/passwordIcon.png')}/>
+      </View>
+      <View style = {{textAlign: 'center'}}>
+        {passwordError ? 
+        <Text style={styles.wrongText}>
+          {passwordError}
+        </Text> : <Text> </Text>}
+      </View>
+      <View style={styles.inputContainer}>
+        <TextInput
+          onChangeText={(text) => handlePasswordChange(text)}
+          value={password}
+          secureTextEntry={true}
+          style={styles.textInput}
+          placeholder="Введите пароль"
+          placeholderTextColor = {Colors.gray}
+        />
+        <Image style = {{position: 'absolute', left: '92%', top: '40%'}} source={require('../../assets/images/passwordIcon.png')}/>
+      </View>
+      <View style = {{textAlign: 'center'}}>
+        {passwordError ? 
+        <Text style={styles.wrongText}>
+          {passwordError}
+        </Text> : <Text> </Text>}
       </View>
       <View style={styles.loginContainer}>
         <TouchableOpacity
@@ -162,7 +185,7 @@ const RegistrationScreen = () => {
           onPressOut={() => setIsPressed(false)}
           onPress={handleRegistration}
         >
-          <Text style={styles.loginText}>Зарегистрироваться</Text>
+          <Text style={styles.loginText}>ЗАРЕГИСТРИРОВАТЬСЯ</Text>
         </TouchableOpacity>
       </View>
       <View style={{ flexDirection: 'row', width: '98%', height: '10%', justifyContent: 'center', marginTop: 15 }}>
@@ -179,14 +202,12 @@ const RegistrationScreen = () => {
 
 export default RegistrationScreen;
 
-const styles = StyleSheet.create({
+export const styles = StyleSheet.create({
   container: {
     justifyContent: 'center',
-    flex: 1,
-    top: '15%'
-  },
-  formContainer: {
     alignItems: 'center',
+    flex: 1,
+    top: '5%',
   },
   inputContainer: {
     borderBottomWidth: 1,
@@ -210,19 +231,17 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.Montserrat,
   },
   loginContainer: {
+    marginTop: '15%',
     flexDirection: 'row',
-    borderRadius: 50,
-    width: '90%',
-    height: '10%',
-    marginLeft: '5%',
+    borderRadius: 70,
+    width: 346,
+    height: 73,
   },
   wrongText: {
     fontSize: 10,
     fontFamily: Fonts.Montserrat,
     color: Colors.red,
-    marginLeft: 20,
     marginTop: 5,
     marginBottom: 5,
-    right: '27%'
   },
 });
