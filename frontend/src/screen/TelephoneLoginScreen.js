@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import Colors from '../../assets/Colors'
 import { Fonts } from '../../assets/fonts/Fonts';
 import { TextInputMask } from 'react-native-masked-text';
+import { LinearGradient } from 'expo-linear-gradient';
 const TelephoneLoginScreen = () => {
   let statusButton = false;
   const [telephone, setTelephone] = useState('');
@@ -15,10 +16,17 @@ const TelephoneLoginScreen = () => {
   const navigation = useNavigation();
   return (
     <View style = {styles.container}>
-      <TouchableOpacity onPress = { () => navigation.goBack() } activeOpacity = {1} style = {{position: 'absolute', top: '31%', left: 50}}>
-        <Image source={require('../../assets/images/backIcon.png')}/>
-      </TouchableOpacity>
-      <Text style={{fontFamily:Fonts.Montserrat, fontSize: 36, marginBottom: 16}}>Вход</Text>
+      <LinearGradient
+        colors={['#FFFFFF', '#FFED00', '#FDC200']}
+        locations={[0, 0.6, 0.96]}
+        style={styles.gradient}
+      ></LinearGradient>
+      <View style = {{flexDirection: 'row', justifyContent: 'center', alignItems: 'center', }}>
+        <TouchableOpacity onPress = { () => navigation.goBack() } activeOpacity = {1} style = {{position: 'absolute', right: '43%', top: '25%'}}>
+          <Image source={require('../../assets/images/backIcon.png')}/>
+        </TouchableOpacity>
+        <Text style={{fontFamily:Fonts.Montserrat, fontSize: 36, marginBottom: 16}}>Вход</Text>
+      </View>
       <Text style={{fontSize: 15, marginBottom: 60}}>Номер телефона</Text>
       <View style={styles.inputContainer}>
         <TextInputMask
@@ -41,11 +49,12 @@ const TelephoneLoginScreen = () => {
                   source={require('../../assets/images/telephoneIconLogin.png')}/>
         }
       </View>
-      <View style={styles.loginContainer}>
+      <View style={[styles.loginContainer, {marginBottom: '40%'}]}>
         <TouchableOpacity
           style={[
             styles.loginButton,
             { backgroundColor: statusButton ?  Colors.orange :'rgba(235, 200, 0, 0.45)' },
+            { elevation: statusButton ? 8 : 0 }
           ]}
           disabled = {!statusButton}
           activeOpacity={1}
@@ -65,7 +74,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     flex: 1,
-    bottom: '12%',
+  },
+  gradient: {
+    position: 'absolute',
+    height: '100%',
+    left: 0,
+    right: 0,
   },
   inputContainer: {
     borderBottomWidth: 1,

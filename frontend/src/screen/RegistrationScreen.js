@@ -3,19 +3,34 @@ import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { Fonts } from '../../assets/fonts/Fonts';
 import Colors from '../../assets/Colors'
+import { LinearGradient } from 'expo-linear-gradient';
+
 const RegistrationScreen = () => {
   const navigation = useNavigation();
   const handleLogin = () => {
     navigation.navigate("Login");
   }  
 
+  let boolStatusFormsRegistration = false;
+  let userForm = false;
+  let emailForm = false;
+  let passwordForm = false;
+  let confirmPasswordForm = false;
+
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [username, setUsername] = useState('');
-  const [isPressed, setIsPressed] = useState(false);
-  const [passwordError, setPasswordError] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState('');
+
   const [usernameError, setUsernameError] = useState(false);
   const [emailError, setEmailError] = useState(false);
+  const [passwordError, setPasswordError] = useState(false);
+  const [confirmPasswordError, setConfirmPasswordError] = useState(false);
+
+  const [isUsernameTouch, setIsUsernameTouch] = useState(false);
+  const [isEmailTouch, setIsEmailTouch] = useState(false);
+  const [isPasswordTouch, setIsPasswordTouch] = useState(false);
+  const [isConfirmPasswordTouch, setIsConfirmPasswordTouch] = useState(false);
 
   const checkUsernameValidity = (value) => {
     const isValidLength = /^.{4,50}$/;
@@ -61,44 +76,55 @@ const RegistrationScreen = () => {
     return null;
   };
   
+  const checkConfirmPasswordValidity = (value) => {
+    if (value!== password) return 'Пароли не совпадают.';
+    return null;
+  }
+
   const handleRegistration = () => {
-    const errorPassw = checkPasswordValidity(password);
-    const errorUser = checkUsernameValidity(username);
-    const errorMail = checkEmailValidity(email);
-    if (!errorUser) {
-       if(!errorMail){
-          if(!errorPassw){
-            navigation.navigate("Main");
-          }
-          else{
-            alert(errorPassw);
-          }
-       }
-       else{
-        alert(errorMail);
-       }
-    } else {
-      alert(errorUser);
-    }
+    navigation.navigate("Main");
   };
   const handleUsernameChange = (text) => {
+    if (!isUsernameTouch) setIsUsernameTouch(true);
     setUsername(text);
     const error = checkUsernameValidity(text);
     setUsernameError(error);
   };
-  const handlePasswordChange = (text) => {
-    setPassword(text);
-    const error = checkPasswordValidity(text);
-    setPasswordError(error);
-  };
   const handleEmailChange = (text) => {
+    if (!isEmailTouch) setIsEmailTouch(true);
     setEmail(text);
     const error = checkEmailValidity(text);
     setEmailError(error);
   };
+  
+  const handlePasswordChange = (text) => {
+    if (!isPasswordTouch) setIsPasswordTouch(true);
+    setPassword(text);
+    const error = checkPasswordValidity(text);
+    setPasswordError(error);
+  };
+
+  const handleConfirmPasswordChange = (text) => {
+    if (!isConfirmPasswordTouch) setIsConfirmPasswordTouch(true);
+    setConfirmPassword(text);
+    const error = checkConfirmPasswordValidity(text);
+    setConfirmPasswordError(error);
+  };
+
+  !usernameError && isUsernameTouch ? (userForm = true)     : (userForm = false);
+  !passwordError && isPasswordTouch ? (passwordForm = true) : (passwordForm = false);
+  !emailError    && isEmailTouch    ? (emailForm = true)    : (emailForm = false);
+  !confirmPasswordError && isConfirmPasswordTouch ? (confirmPasswordForm = true) : (confirmPasswordForm = false);
+  userForm && passwordForm && confirmPasswordForm && emailForm ? boolStatusFormsRegistration = true : boolStatusFormsRegistration = false;
+  
   return (
     <View style={styles.container}>
-      <View style = {{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 120}}>
+      <LinearGradient
+        colors={['#FFFFFF', '#FFED00', '#FDC200']}
+        locations={[0, 0.6, 0.96]}
+        style={styles.gradient}
+      ></LinearGradient>
+      <View style = {{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 120, marginTop: '20%'}}>
         <TouchableOpacity onPress = { () => navigation.goBack() } activeOpacity = {1} style = {{position: 'absolute', right: 240}}>
           <Image source={require('../../assets/images/backIcon.png')}/>
         </TouchableOpacity>
@@ -114,7 +140,12 @@ const RegistrationScreen = () => {
           placeholder="Введите имя пользователя"
           placeholderTextColor= {Colors.gray}
         />
-        <Image style = {{position: 'absolute', left: '92%', top: '40%'}} source={require('../../assets/images/userIcon.png')}/>
+        {userForm ? 
+          <Image  style = {{position: 'absolute', left: '92%', top: '35%'}}
+                  source= {require('../../assets/images/correctFormIcon.png')}/> : 
+          <Image  style = {{position: 'absolute', left: '92%', top: '35%'}}
+                  source= {require('../../assets/images/userIcon.png')}/>
+        }
       </View>
       <View style = {{textAlign: 'center'}}>
         {usernameError ? 
@@ -131,7 +162,12 @@ const RegistrationScreen = () => {
           placeholderTextColor= {Colors.gray}
           keyboardType="email-address"
         />
-        <Image style = {{position: 'absolute', left: '92%', top: '40%'}} source={require('../../assets/images/emailIcon.png')}/>
+        {emailForm ? 
+          <Image  style = {{position: 'absolute', left: '92%', top: '35%'}}
+                  source= {require('../../assets/images/correctFormIcon.png')}/> : 
+          <Image  style = {{position: 'absolute', left: '92%', top: '35%'}}
+                  source= {require('../../assets/images/emailIcon.png')}/>
+        }
       </View>
       <View style = {{textAlign: 'center'}}>
         {emailError ?
@@ -146,10 +182,15 @@ const RegistrationScreen = () => {
           value={password}
           secureTextEntry={true}
           style={styles.textInput}
-          placeholder="Введите пароль"
+          placeholder="Придумайте пароль"
           placeholderTextColor = {Colors.gray}
         />
-        <Image style = {{position: 'absolute', left: '92%', top: '40%'}} source={require('../../assets/images/passwordIcon.png')}/>
+        {passwordForm ? 
+          <Image  style = {{position: 'absolute', left: '92%', top: '35%'}}
+                  source= {require('../../assets/images/correctFormIcon.png')}/> : 
+          <Image  style = {{position: 'absolute', left: '92%', top: '35%'}}
+                  source= {require('../../assets/images/passwordIcon.png')}/>
+        }
       </View>
       <View style = {{textAlign: 'center'}}>
         {passwordError ? 
@@ -159,33 +200,40 @@ const RegistrationScreen = () => {
       </View>
       <View style={styles.inputContainer}>
         <TextInput
-          onChangeText={(text) => handlePasswordChange(text)}
-          value={password}
+          onChangeText={(text) => handleConfirmPasswordChange(text)}
+          value={confirmPassword}
           secureTextEntry={true}
           style={styles.textInput}
-          placeholder="Введите пароль"
+          placeholder="Повторите пароль"
           placeholderTextColor = {Colors.gray}
         />
-        <Image style = {{position: 'absolute', left: '92%', top: '40%'}} source={require('../../assets/images/passwordIcon.png')}/>
+        {confirmPasswordForm ? 
+          <Image  style = {{position: 'absolute', left: '92%', top: '35%'}}
+                  source= {require('../../assets/images/correctFormIcon.png')}/> : 
+          <Image  style = {{position: 'absolute', left: '92%', top: '35%'}}
+                  source= {require('../../assets/images/passwordIcon.png')}/>
+        }
       </View>
       <View style = {{textAlign: 'center'}}>
-        {passwordError ? 
+        {confirmPasswordError ? 
         <Text style={styles.wrongText}>
-          {passwordError}
+          {confirmPasswordError}
         </Text> : <Text> </Text>}
       </View>
       <View style={styles.loginContainer}>
         <TouchableOpacity
           style={[
             styles.loginButton,
-            { backgroundColor: isPressed ? Colors.yellowLight : Colors.yellowDarkness },
-          ]}
-          activeOpacity={1}
-          onPressIn={() => setIsPressed(true)}
-          onPressOut={() => setIsPressed(false)}
-          onPress={handleRegistration}
-        >
-          <Text style={styles.loginText}>ЗАРЕГИСТРИРОВАТЬСЯ</Text>
+            { backgroundColor: boolStatusFormsRegistration ? Colors.orange : 'rgba(235, 200, 0, 0.45)' },
+            ]}
+            activeOpacity={1}
+            disabled = {!boolStatusFormsRegistration}
+            onPress={handleRegistration}
+          >
+          <Text style={[styles.loginText, 
+            {color: boolStatusFormsRegistration ?  Colors.black : 'rgba(0, 0, 0, 0.34)'},
+            { elevation: boolStatusFormsRegistration ? 8 : 0 }
+            ]}>ЗАРЕГИСТРИРОВАТЬСЯ</Text>
         </TouchableOpacity>
       </View>
       <View style={{ flexDirection: 'row', width: '98%', height: '10%', justifyContent: 'center', marginTop: 15 }}>
@@ -207,7 +255,12 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     flex: 1,
-    top: '5%',
+  },
+  gradient: {
+    position: 'absolute',
+    height: '100%',
+    left: 0,
+    right: 0,
   },
   inputContainer: {
     borderBottomWidth: 1,

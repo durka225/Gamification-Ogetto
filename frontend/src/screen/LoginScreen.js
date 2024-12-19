@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { Fonts } from '../../assets/fonts/Fonts';
 import Colors from '../../assets/Colors'
+import { LinearGradient } from 'expo-linear-gradient';
 
 const LoginScreen = () => {
   const navigation = useNavigation();
@@ -43,7 +44,12 @@ const LoginScreen = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.inputContainer}>
+      <LinearGradient
+        colors={['#FFFFFF', '#FFED00', '#FDC200']}
+        locations={[0, 0.6, 0.96]}
+        style={styles.gradient}
+      ></LinearGradient>
+      <View style={[styles.inputContainer, {marginTop: '30%'}]}>
         <TextInput
           value={email}
           onChangeText={(text) => handleCheckEmail(text)}
@@ -93,16 +99,19 @@ const LoginScreen = () => {
           </Text>
         </TouchableOpacity>
       </View>
-      <Text style = {{textAlign: 'center', marginTop: 77, marginBottom: 123, fontSize: 15, fontFamily: Fonts.Montserrat}}>или войдите через</Text>
-      <Image style = {{position: 'absolute', left: '32%', top: '52%'}} source={require('../../assets/images/googleIcon.png')}/>
-      <Pressable onPress={toTelephoneLogin} style ={{position: 'absolute', left: '52%', top: '52%'}}>
-        <Image style = {{}} source={require('../../assets/images/telephoneIcon.png')}/>
-      </Pressable>
+      <Text style = {{textAlign: 'center', marginTop: 77, marginBottom: 20, fontSize: 15, fontFamily: Fonts.Montserrat}}>или войдите через</Text>
+      <View style = {{flexDirection: 'row', marginBottom: 43}}>
+        <Image style = {{marginRight: 24}} source={require('../../assets/images/googleIcon.png')}/>
+        <Pressable onPress={toTelephoneLogin} style ={{}}>
+          <Image style = {{}} source={require('../../assets/images/telephoneIcon.png')}/>
+        </Pressable>
+      </View>
       <View style={styles.loginContainer}>
         <TouchableOpacity
           style={[
             styles.loginButton,
             { backgroundColor: boolStatusFormsLogin ? Colors.orange : 'rgba(235, 200, 0, 0.45)' },
+            { elevation: boolStatusFormsLogin ? 8 : 0 }
           ]}
           disabled = {!boolStatusFormsLogin}
           activeOpacity={1}
@@ -130,7 +139,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     flex: 1,
-    top: '8%',
+  },
+  gradient: {
+    position: 'absolute',
+    height: '100%',
+    left: 0,
+    right: 0,
   },
   background: {
     position: 'absolute',

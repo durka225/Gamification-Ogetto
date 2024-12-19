@@ -8,6 +8,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { photos } from '../../assets/Data';
 import { TabBar, SceneMap, TabView } from 'react-native-tab-view'
 import profilePhoto from '../../assets/images/profileImage.jpg'
+
 const ScoreRoutes = () => (
   <View style = {{flex: 1}}>
     <Text style = {{fontFamily: Fonts.MontserratBold, color: Colors.green, fontSize: 18}}>+500 {'\n'} +1000</Text>
