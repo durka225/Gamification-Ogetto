@@ -7,6 +7,7 @@ import com.example.test.controller.activity.ActivitiesWithUsers
 import com.example.test.controller.activity.ActivityStatus
 import com.example.test.controller.exception.ApiRequestException
 import com.example.test.controller.exception.InternalServerErrorException
+import com.example.test.model.Category
 
 import org.springframework.stereotype.Repository
 
@@ -21,7 +22,7 @@ class ActivityRepository () {
 
     private val activitiesWithUsers = mutableListOf<ActivitiesWithUsers>()
 
-    private val categories = mutableListOf<String>()
+    private val categories = mutableListOf<Category>()
 
     fun addActivity(activity: Activity): Boolean {
         val maxId = activities.maxOfOrNull { it.id } ?: -1
@@ -29,7 +30,7 @@ class ActivityRepository () {
         if (!activity.dateEnd.isAfter(activity.dateStart))
             throw ApiRequestException("Дата завершения активности (${activity.dateEnd})" +
             " должна быть позже даты начала (${activity.dateStart}).") // Bad Request
-        if (!categories.any { it == activity.category })
+        if (!categories.any { it.equals(activity.category) })
             throw ApiRequestException("Категория активности (${activity.category}) недействительна." +
             " Допустимые категории: ${categories.joinToString(", ")}.") // Bad Request
         return activities.add(updateActivity)
@@ -102,7 +103,7 @@ class ActivityRepository () {
 
     fun updateActivityUsers(activityId: Int, newUsers: List<UserToActivity>): Boolean {
         val index = activitiesWithUsers.indexOfFirst { it.activity.id == activityId }
-        if (index == -1) InternalServerErrorException("Не удалось найти активность с ID ${activityId}") // Internal Server Error
+        if (index == -1) throw InternalServerErrorException("Не удалось найти активность с ID ${activityId}") // Internal Server Error
         activitiesWithUsers[index] = activitiesWithUsers[index].copy(users = newUsers)
         return true
     }
@@ -112,14 +113,17 @@ class ActivityRepository () {
         if (activityWithUsers != null) {
             activityWithUsers.status = newStatus
         } else {
-            InternalServerErrorException("Не удалось обновить статус активности") // Internal Server Error
+            throw InternalServerErrorException("Не удалось обновить статус активности") // Internal Server Error
         }
         return true
     }
 
-    fun addCategory(newCategory: String): Boolean =
-        categories.add(newCategory)
+    fun addCategory(newCategory: Category): Boolean {
+        val maxId = categories.maxOfOrNull { it.id } ?: -1
+        val update = newCategory.copy(id = maxId + 1)
+        return categories.add(update)
+    }
         
-    fun getCategory(): List<String> = categories
+    fun getCategory(): List<Category> = categories
 
 }

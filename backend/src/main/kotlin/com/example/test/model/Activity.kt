@@ -2,7 +2,7 @@ package com.example.test.model
 
 import java.time.LocalDateTime
 
-data class Activity (
+data class Activity(
     val id: Int,
     val title: String,
     val category: String,

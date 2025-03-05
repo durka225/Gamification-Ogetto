@@ -8,6 +8,7 @@ import com.example.test.controller.activity.ActivitiesWithUsers
 import com.example.test.controller.exception.ApiRequestException
 import com.example.test.controller.exception.InternalServerErrorException
 import com.example.test.controller.activity.ActivityStatus
+import com.example.test.model.Category
 
 import org.springframework.stereotype.Service
 
@@ -65,9 +66,9 @@ class ActivityService(
     fun getAllActivitiesWithUsers(): List<ActivitiesWithUsers> = 
         activityRepository.getAllActivitiesWithUsers()
 
-    fun addNewCategory(newCategory: String): Boolean =
-        activityRepository.addCategory(newCategory)
+    fun addNewCategory(newCategory: String): Boolean=
+        activityRepository.addCategory(Category (0, newCategory))
 
-    fun getAllCategory(): List<String> =
+    fun getAllCategory(): List<Category> =
         activityRepository.getCategory()
 }

@@ -7,6 +7,8 @@ import com.example.test.service.UserService
 import com.example.test.service.TransactionService
 import com.example.test.controller.exception.ApiRequestException
 import com.example.test.controller.exception.NotFoundException
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.tags.Tag
 
 
 import org.springframework.http.HttpStatus
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ResponseStatusException
@@ -25,14 +28,18 @@ import java.util.*
 
 @RestController
 @RequestMapping("/api/user")
+@Tag(name = "Контроллер управления пользователями")
 class UserController(
     private val userService: UserService,
     private val transactionService: TransactionService
 ) {
 
-    // Функция POST - запроса для создания пользователя
-    // Принимает объект UserRequest, конвертирует его в модель User и передаёт его в UserService
-    // В функцию createUser и преобразует потом в формат ответа через toResponseUser
+    @Operation(
+        summary = "Создание нового пользователя",
+        description = "Создание нового пользователя, " +
+                "проверяется корректность данных пользователя и проверка того, " +
+                "не существует указанные login и email уже в базе данных, иначе возврат 400 Bad Request."
+    )
     @PostMapping
     fun create(@RequestBody userRequest: UserRequest): UserResponse =
         userService.createUser(
@@ -41,18 +48,22 @@ class UserController(
             ?.toResponseUser()
             ?: throw  ApiRequestException("Не удалось создать пользователя.") // Bad Request
 
-    // Функция GET - запроса для получения всего списка пользователя
-    // Преобразует список моделей User в список ответов UserResponse
-    // возвращает его в формате ResponseEntity с HttpStatus.OK
+    @Operation(
+        summary = "Получение всех пользователей",
+        description = "Запрос возвращает всех существующих пользователей в базе данных. " +
+                "Может быть использован только администратором."
+    )
     @GetMapping
     fun listAll(): List<UserResponse> =
         userService.findByAll()
             .map {it.toResponseUser() }
 
 
-    // Функция GET - запроса для получения пользователя по UUID
-    // Принимает uuid пользователя, ищет пользователя по uuid через функцию findByUUID
-    // Конвертирует потом в ответ через toResponseUser
+    @Operation(
+        summary = "Получение информации о конкретном пользователе по его UUID.",
+        description = "Ищет пользователя в базе данных по его UUID, если не найден, то " +
+                "возврат кода 404 Not Found."
+    )
     @GetMapping("/{uuid}")
     fun findByUUID(@PathVariable uuid: UUID): UserResponse =
         userService.findByUUID(uuid)
@@ -60,10 +71,11 @@ class UserController(
             ?: throw  NotFoundException("Не удалось найти пользователя.") // Not found
 
 
-    // Функция DELETE - запроса для удаления пользователя по UUID
-    // Принимает uuid пользователя, удаляет его через функцию deleteByUUID
-    // Возвращает ResponseEntity с HttpStatus.NO_CONTENT
-    // Eсли удаление прошло успешно, иначе - HttpStatus.NOT_FOUND, если пользователь не найдено
+    @Operation(
+        summary = "Удаление пользователя по UUID",
+        description = "Ищет пользователя в базе данных по его UUID, если не найден, то " +
+                "возврат кода 404 Not Found, иначе удаляет пользователя."
+    )
     @DeleteMapping("/{uuid}")
     fun deleteByUUID(@PathVariable uuid: UUID): ResponseEntity<Boolean> {
         val success = userService.deleteByUUID(uuid)
@@ -75,14 +87,32 @@ class UserController(
             throw  NotFoundException("Не удалось найти пользователя.") // Not found
     }
 
+    // todo Переделать транзакции, чтобы возвращались по пользователю, а не только все сразу.
+    @Operation(
+        summary = "Получение всех транзакций",
+        description = ""
+    )
     @GetMapping("/transactions")
-    fun listAllTransactions(): List<TransactionResponse> =
-        transactionService.findAllTransactions()
+    fun listAllTransactions(@RequestHeader("Authorization") request: String): List<TransactionResponse> =
+        transactionService.findTransactionsUser(request)
             .map { it.toResponseTransaction() }
 
+    @Operation(
+        summary = "Добавление пользователя в активность.",
+        description = "Добавляет пользователя для участия в активности, " +
+                "проверяет существует ли активность и не началась ли она уже. Если началась, то возвращается 400 Bad Request, " +
+                "если не существует, то возвращается 404 Not Found."
+    )
     @PostMapping("{uuid}/activities/{activityId}")
     fun addUserToActivity(@PathVariable activityId: Int, @PathVariable uuid: UUID): Boolean =
         userService.addUserToActivity(uuid, activityId)
+
+
+    // Тестовый метод
+    @PostMapping("/addUserTest")
+    fun addUserTest(@RequestBody request: UserRequest): Boolean {
+        return userService.addUserTest(request)
+    }
 
     
 

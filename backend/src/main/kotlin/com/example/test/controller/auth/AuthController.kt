@@ -2,6 +2,8 @@ package com.example.test.controller.auth
 
 import com.example.test.service.AuthenticationService
 import com.example.test.controller.exception.ForbiddenException
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.tags.Tag
 
 
 import org.apache.tomcat.util.net.openssl.ciphers.Authentication
@@ -14,23 +16,28 @@ import org.springframework.web.server.ResponseStatusException
 
 @RestController
 @RequestMapping("/api/auth")
+@Tag(name = "Контроллер аутентификации и регистрации")
 class AuthController(
     private val authenticationService: AuthenticationService
 ) {
-
-
-    // Функция POST - запроса, которая аунтефицирует пользователя
-    // и возвращает токен для доступа к API.
-    // Принимает на вход модель AuthenticationRequest
+    @Operation(
+        summary = "Авторизация пользователя",
+        description = "Позволяет авторизовать пользователя. " +
+                "Получает в запросе данные пользователя, сверяет логин и пароль с базой данных. " +
+                "Если совпадает всё, то возвращает токен доступа и токен замены." +
+                "Если не совпадает, то возвращает ошибку 500."
+    )
     @PostMapping
-    fun authenticate(@RequestBody authRequest: AuthenticationRequest): AuthenticationResponse =
+    fun authorization(@RequestBody authRequest: AuthenticationRequest): AuthenticationResponse =
         authenticationService.authentication(authRequest)
 
 
-    // Функция POST - запроса, которая генерирует новый токен для доступа к API
-    // Принимает RefreshTokenRequest, который содержит токен
-    // Возращает новый токен в теле TokenResponse
-    // Если токен недействителен, то выбрасывается исключение HTTP 403
+    @Operation(
+        summary = "Обновление токена доступа",
+        description = "Позволяет обновить токен доступа. " +
+                "Проверяется токен замены на корректность, если он некорректный, то " +
+                "возврат исключения 403 Forbidden."
+    )
     @PostMapping("/refresh")
     fun refreshAccessToken(@RequestBody request: RefreshTokenRequest): TokenResponse =
         authenticationService.refreshAccessToken(request.token)

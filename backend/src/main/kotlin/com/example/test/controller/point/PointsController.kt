@@ -3,6 +3,7 @@ package com.example.test.controller.point
 import com.example.test.service.PointService
 import com.example.test.model.Point
 import com.example.test.controller.exception.NotFoundException
+import io.swagger.v3.oas.annotations.tags.Tag
 
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.bind.annotation.RequestMapping
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable
 
 @RestController
 @RequestMapping("/api/points")
+@Tag(name = "Управление баллами пользователей")
 class PointsController(
     private val pointService: PointService
 ) {
