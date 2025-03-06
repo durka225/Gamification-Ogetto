@@ -65,6 +65,7 @@ class PointService(
     
         val newTransaction = Transaction(
             id = 0,
+            idUser = 0,
             date = currentDate,
             description = description,
             type = if (points >= 0) TransactionType.Accrual else TransactionType.Deduction

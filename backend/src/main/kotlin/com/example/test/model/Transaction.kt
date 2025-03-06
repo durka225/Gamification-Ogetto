@@ -4,7 +4,7 @@ import java.util.UUID
 
 data class Transaction (
     val id: Int,
-    val idUser: UUID,
+    val idUser: Int,
     val date: String,
     val description: String,
     val type: TransactionType,

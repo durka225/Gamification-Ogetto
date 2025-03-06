@@ -13,30 +13,35 @@ class TransactionRepository() {
     private val Transactions = mutableListOf<Transaction>(
         Transaction(
             id = 0,
+            idUser = 0,
             date = "2024-12-10",
             description = "Invent",
             type = TransactionType.Accrual
         ),
         Transaction(
             id = 1,
+            idUser = 0,
             date = "2024-10-12",
             description = "Invent",
             type = TransactionType.Accrual
         ),
         Transaction(
             id = 2,
+            idUser = 0,
             date = "2024-12-11",
             description = "Invent",
             type = TransactionType.Accrual
         ),
         Transaction(
             id = 3,
+            idUser = 0,
             date = "2024-11-12",
             description = "Invent",
             type = TransactionType.Accrual
         ),
         Transaction(
             id = 4,
+            idUser = 0,
             date = "2024-11-20",
             description = "Invent",
             type = TransactionType.Accrual

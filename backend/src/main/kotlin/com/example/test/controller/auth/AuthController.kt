@@ -3,6 +3,7 @@ package com.example.test.controller.auth
 import com.example.test.service.AuthenticationService
 import com.example.test.controller.exception.ForbiddenException
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 
 
@@ -28,7 +29,10 @@ class AuthController(
                 "Если не совпадает, то возвращает ошибку 500."
     )
     @PostMapping
-    fun authorization(@RequestBody authRequest: AuthenticationRequest): AuthenticationResponse =
+    fun authorization(
+        @Parameter(description = "Данные для авторизации пользователя, содержит логин и пароль")
+        @RequestBody authRequest: AuthenticationRequest
+    ): AuthenticationResponse =
         authenticationService.authentication(authRequest)
 
 
@@ -39,7 +43,10 @@ class AuthController(
                 "возврат исключения 403 Forbidden."
     )
     @PostMapping("/refresh")
-    fun refreshAccessToken(@RequestBody request: RefreshTokenRequest): TokenResponse =
+    fun refreshAccessToken(
+        @Parameter(description = "Запрос на обновление токена, содержит токен замены (refresh token)")
+        @RequestBody request: RefreshTokenRequest
+    ): TokenResponse =
         authenticationService.refreshAccessToken(request.token)
             ?.mapToTokenResponse()
             ?: throw ForbiddenException("Некорректный токен замены") // forbidden

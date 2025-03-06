@@ -8,8 +8,8 @@ import com.example.test.service.TransactionService
 import com.example.test.controller.exception.ApiRequestException
 import com.example.test.controller.exception.NotFoundException
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
-
 
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatusCode
@@ -36,22 +36,26 @@ class UserController(
 
     @Operation(
         summary = "Создание нового пользователя",
-        description = "Создание нового пользователя, " +
-                "проверяется корректность данных пользователя и проверка того, " +
-                "не существует указанные login и email уже в базе данных, иначе возврат 400 Bad Request."
+        description = "Создание нового пользователя. " +
+                "Проверяется корректность данных пользователя и отсутствие в базе данных " +
+                "пользователей с таким же логином или email. Если данные некорректны или " +
+                "пользователь с таким логином/email уже существует, возвращается ошибка 400 Bad Request."
     )
     @PostMapping
-    fun create(@RequestBody userRequest: UserRequest): UserResponse =
+    fun create(
+        @Parameter(description = "Данные создаваемого пользователя, включая логин, пароль и email")
+        @RequestBody userRequest: UserRequest
+    ): UserResponse =
         userService.createUser(
             user = userRequest.toModel()
         )
             ?.toResponseUser()
-            ?: throw  ApiRequestException("Не удалось создать пользователя.") // Bad Request
+            ?: throw ApiRequestException("Не удалось создать пользователя.") // Bad Request
 
     @Operation(
         summary = "Получение всех пользователей",
-        description = "Запрос возвращает всех существующих пользователей в базе данных. " +
-                "Может быть использован только администратором."
+        description = "Возвращает список всех пользователей, зарегистрированных в системе. " +
+                "Данный метод доступен только пользователям с ролью администратора."
     )
     @GetMapping
     fun listAll(): List<UserResponse> =
@@ -60,65 +64,84 @@ class UserController(
 
 
     @Operation(
-        summary = "Получение информации о конкретном пользователе по его UUID.",
-        description = "Ищет пользователя в базе данных по его UUID, если не найден, то " +
-                "возврат кода 404 Not Found."
+        summary = "Получение информации о конкретном пользователе",
+        description = "Возвращает детальную информацию о пользователе по его уникальному идентификатору (UUID). " +
+                "Если пользователь не найден, возвращается ошибка 404 Not Found."
     )
     @GetMapping("/{uuid}")
-    fun findByUUID(@PathVariable uuid: UUID): UserResponse =
+    fun findByUUID(
+        @Parameter(description = "Уникальный идентификатор пользователя (UUID)")
+        @PathVariable uuid: UUID
+    ): UserResponse =
         userService.findByUUID(uuid)
             ?.toResponseUser()
-            ?: throw  NotFoundException("Не удалось найти пользователя.") // Not found
+            ?: throw NotFoundException("Не удалось найти пользователя.") // Not found
 
 
     @Operation(
-        summary = "Удаление пользователя по UUID",
-        description = "Ищет пользователя в базе данных по его UUID, если не найден, то " +
-                "возврат кода 404 Not Found, иначе удаляет пользователя."
+        summary = "Удаление пользователя",
+        description = "Удаляет пользователя из системы по его уникальному идентификатору (UUID). " +
+                "При успешном удалении возвращает статус 204 No Content. " +
+                "Если пользователь не найден, возвращается ошибка 404 Not Found."
     )
     @DeleteMapping("/{uuid}")
-    fun deleteByUUID(@PathVariable uuid: UUID): ResponseEntity<Boolean> {
+    fun deleteByUUID(
+        @Parameter(description = "Уникальный идентификатор удаляемого пользователя (UUID)")
+        @PathVariable uuid: UUID
+    ): ResponseEntity<Boolean> {
         val success = userService.deleteByUUID(uuid)
 
         return if(success)
             ResponseEntity.noContent()
                 .build()
         else
-            throw  NotFoundException("Не удалось найти пользователя.") // Not found
+            throw NotFoundException("Не удалось найти пользователя.") // Not found
     }
 
-    // todo Переделать транзакции, чтобы возвращались по пользователю, а не только все сразу.
     @Operation(
-        summary = "Получение всех транзакций",
-        description = ""
+        summary = "Получение всех транзакций пользователя",
+        description = "Возвращает список всех транзакций, связанных с текущим пользователем. " +
+                "Пользователь определяется на основе JWT-токена, переданного в заголовке запроса."
     )
     @GetMapping("/transactions")
-    fun listAllTransactions(@RequestHeader("Authorization") request: String): List<TransactionResponse> =
+    fun listAllTransactions(
+        @Parameter(description = "JWT-токен авторизации в формате 'Bearer {token}'")
+        @RequestHeader("Authorization") request: String
+    ): List<TransactionResponse> =
         transactionService.findTransactionsUser(request)
             .map { it.toResponseTransaction() }
 
     @Operation(
-        summary = "Добавление пользователя в активность.",
-        description = "Добавляет пользователя для участия в активности, " +
-                "проверяет существует ли активность и не началась ли она уже. Если началась, то возвращается 400 Bad Request, " +
-                "если не существует, то возвращается 404 Not Found."
+        summary = "Добавление пользователя в активность",
+        description = "Регистрирует пользователя как участника указанной активности. " +
+                "Проверяет существование активности и её статус (не началась ли она уже). " +
+                "Если активность уже началась, возвращается ошибка 400 Bad Request. " +
+                "Если активность не найдена, возвращается ошибка 404 Not Found. " +
+                "Возвращает true при успешной регистрации пользователя в активности."
     )
     @PostMapping("{uuid}/activities/{activityId}")
-    fun addUserToActivity(@PathVariable activityId: Int, @PathVariable uuid: UUID): Boolean =
+    fun addUserToActivity(
+        @Parameter(description = "Идентификатор активности")
+        @PathVariable activityId: Int,
+        @Parameter(description = "Уникальный идентификатор пользователя (UUID)")
+        @PathVariable uuid: UUID
+    ): Boolean =
         userService.addUserToActivity(uuid, activityId)
 
 
-    // Тестовый метод
+    @Operation(
+        summary = "Тестовый метод добавления пользователя",
+        description = "Метод для тестирования создания пользователя. Используется только в целях разработки и тестирования."
+    )
     @PostMapping("/addUserTest")
-    fun addUserTest(@RequestBody request: UserRequest): Boolean {
+    fun addUserTest(
+        @Parameter(description = "Данные тестового пользователя")
+        @RequestBody request: UserRequest
+    ): Boolean {
         return userService.addUserTest(request)
     }
 
-    
-
-
     // Функция преобразования запроса в модель User
-    // По определённой форме
     private fun UserRequest.toModel(): User =
         User(
             id = UUID.randomUUID(),
@@ -128,7 +151,6 @@ class UserController(
             point = 0,
             email = this.email
         )
-
 
     // Функция преобразования модели User в ответ UserResponse
     private fun User.toResponseUser(): UserResponse =

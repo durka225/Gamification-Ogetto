@@ -20,7 +20,8 @@ class TransactionService(
             tokenService.extractLogin(request.substringAfter("Bearer "))
                 ?: throw BadRequestException("Invalid token")
         )?.id
-        return transactionRepository.findAllTransactions().filter { it.idUser == uuid }
+            // todo Изменить логику
+        return transactionRepository.findAllTransactions().filter { it.idUser == 0 }
     }
 
     fun findById(id: Int): Transaction? =
