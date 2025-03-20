@@ -5,6 +5,7 @@ import com.example.test.repository.RewardRepository
 import com.example.test.service.RewardService
 import com.example.test.controller.exception.ApiRequestException
 import com.example.test.controller.exception.NotFoundException
+import com.example.test.model.Point
 import com.test.example.controller.rewards.RewardCreatePointRequest
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -57,7 +58,7 @@ class RewardsController(
             reward = rewardRequest.toModel()
         )
             ?.toResponseReward()
-            ?: throw ApiRequestException("Не удалосб создать награду.") // Bad Request
+            ?: throw ApiRequestException("Не удалось создать награду.") // Bad Request
 
     @Operation(
         summary = "Удаление награды",
@@ -92,7 +93,7 @@ class RewardsController(
         @RequestBody requestCreatePoint: RewardCreatePointRequest,
         @Parameter(description = "JWT-токен авторизации в формате 'Bearer {token}'")
         @RequestHeader("Authorization") token: String
-    ): Boolean {
+    ): Point {
         val updateToken = token.substringAfter("Bearer ")
         return rewardService.createPoint(requestCreatePoint, updateToken)
     }

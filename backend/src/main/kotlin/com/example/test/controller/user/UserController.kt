@@ -68,12 +68,12 @@ class UserController(
         description = "Возвращает детальную информацию о пользователе по его уникальному идентификатору (UUID). " +
                 "Если пользователь не найден, возвращается ошибка 404 Not Found."
     )
-    @GetMapping("/{uuid}")
+    @GetMapping("/{id}")
     fun findByUUID(
         @Parameter(description = "Уникальный идентификатор пользователя (UUID)")
-        @PathVariable uuid: UUID
+        @PathVariable id: Int
     ): UserResponse =
-        userService.findByUUID(uuid)
+        userService.findById(id)
             ?.toResponseUser()
             ?: throw NotFoundException("Не удалось найти пользователя.") // Not found
 
@@ -84,12 +84,12 @@ class UserController(
                 "При успешном удалении возвращает статус 204 No Content. " +
                 "Если пользователь не найден, возвращается ошибка 404 Not Found."
     )
-    @DeleteMapping("/{uuid}")
+    @DeleteMapping("/{id}")
     fun deleteByUUID(
         @Parameter(description = "Уникальный идентификатор удаляемого пользователя (UUID)")
-        @PathVariable uuid: UUID
+        @PathVariable id: Int
     ): ResponseEntity<Boolean> {
-        val success = userService.deleteByUUID(uuid)
+        val success = userService.deleteById(id)
 
         return if(success)
             ResponseEntity.noContent()
@@ -119,32 +119,19 @@ class UserController(
                 "Если активность не найдена, возвращается ошибка 404 Not Found. " +
                 "Возвращает true при успешной регистрации пользователя в активности."
     )
-    @PostMapping("{uuid}/activities/{activityId}")
+    @PostMapping("{id}/activities/{activityId}")
     fun addUserToActivity(
         @Parameter(description = "Идентификатор активности")
         @PathVariable activityId: Int,
         @Parameter(description = "Уникальный идентификатор пользователя (UUID)")
-        @PathVariable uuid: UUID
+        @PathVariable id: Int
     ): Boolean =
-        userService.addUserToActivity(uuid, activityId)
-
-
-    @Operation(
-        summary = "Тестовый метод добавления пользователя",
-        description = "Метод для тестирования создания пользователя. Используется только в целях разработки и тестирования."
-    )
-    @PostMapping("/addUserTest")
-    fun addUserTest(
-        @Parameter(description = "Данные тестового пользователя")
-        @RequestBody request: UserRequest
-    ): Boolean {
-        return userService.addUserTest(request)
-    }
+        userService.addUserToActivity(id, activityId)
 
     // Функция преобразования запроса в модель User
     private fun UserRequest.toModel(): User =
         User(
-            id = UUID.randomUUID(),
+            id = 0,
             login = this.login,
             password = this.password,
             role = Role.user,
@@ -155,8 +142,8 @@ class UserController(
     // Функция преобразования модели User в ответ UserResponse
     private fun User.toResponseUser(): UserResponse =
         UserResponse(
-            uuid = this.id,
-            email = this.email,
+            id = this.id,
+            login = this.login,
             point = this.point,
         )
 

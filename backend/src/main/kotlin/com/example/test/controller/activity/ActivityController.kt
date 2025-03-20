@@ -31,7 +31,7 @@ class ActivityController(
                 "и запланированные на будущее. Список сортируется по дате начала активности."
     )
     @GetMapping
-    fun getAllAcivites(): List<Activity> =
+    fun getAllAcivites(): List<ActivityResponse> =
         activityService.getAllActivities()
 
     @Operation(
@@ -55,9 +55,8 @@ class ActivityController(
     fun createActivity(
         @Parameter(description = "Данные новой активности, включая название, категорию, вознаграждение и даты")
         @RequestBody activity: ActivityRequest
-    ): Boolean {
-        val request = activity.requestToModel()
-        return activityService.createActivity(request)
+    ): Activity {
+        return activityService.createActivity(activity)
     }
 
     @Operation(
@@ -73,23 +72,11 @@ class ActivityController(
         @PathVariable id: Int,
         @Parameter(description = "Обновляемые данные активности (название, категория, вознаграждение, даты)")
         @RequestBody request: ActivityRequest
-    ): Boolean {
-        val update = request.toModelActivity(id)
-        return activityService.updateActivity(id, update)
+    ): Activity {
+        return activityService.updateActivity(id, request)
     }
 
-    private fun ActivityRequest.toModelActivity(id_request: Int): Activity =
-        Activity(
-            id = id_request,
-            title = this.title,
-            category = this.category,
-            reward = this.reward,
-            dateStart = this.dateStart,
-            dateEnd = this.dateEnd
-        )
-
-
-    @Operation(
+    /*@Operation(
         summary = "Получение активностей со списком участвующих пользователей",
         description = "Возвращает расширенную информацию о всех активностях, включая полные списки " +
                 "участвующих пользователей для каждой активности. Данный метод обновляет кэш " +
@@ -99,17 +86,7 @@ class ActivityController(
     fun getAllActivitiesWithUsers(): List<ActivitiesWithUsers> {
         activityService.addActivitiesWithUsers()
         return activityService.getAllActivitiesWithUsers()
-    }
-
-    private fun ActivityRequest.requestToModel(): Activity =
-        Activity(
-            id = 0,
-            title = this.title,
-            reward = this.reward,
-            category = this.category,
-            dateStart = this.dateStart,
-            dateEnd = this.dateEnd
-        )
+    }*/
 
 
     @Operation(
@@ -122,7 +99,7 @@ class ActivityController(
     fun createCategory(
         @Parameter(description = "Название новой категории активности")
         @RequestBody newCategory: String
-    ): Boolean =
+    ): Category =
         activityService.addNewCategory(newCategory)
 
     @Operation(

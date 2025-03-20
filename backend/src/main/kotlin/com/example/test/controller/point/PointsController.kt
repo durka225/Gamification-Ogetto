@@ -36,9 +36,9 @@ class PointsController(
         @RequestBody request: PointsRequestAdd,
         @Parameter(description = "JWT-токен авторизации в формате 'Bearer {token}'")
         @RequestHeader("Authorization") token: String
-    ): Boolean {
+    ): Point {
         val updateToken = token.substringAfter("Bearer ")
-        return pointService.addApplication(request.toModelPoint(), updateToken)
+        return pointService.addApplication(request, updateToken)
     }
 
     @Operation(
@@ -49,7 +49,7 @@ class PointsController(
     )
     @GetMapping
     fun getAllPoints(): List<Point> {
-        pointService.addCompletedActivitiesRequest()
+        // pointService.addCompletedActivitiesRequest()
         return pointService.getAllApplications()
     }
 
@@ -65,24 +65,6 @@ class PointsController(
         @Parameter(description = "Идентификатор заявки на начисление баллов")
         @PathVariable id: Int
     ): String {
-        val foundPoint = pointService.getById(id)
-            ?.toRequestBody()
-            ?: throw NotFoundException("Заявка не найдена") // Not found
-        return pointService.changePoints(foundPoint, id)
+        return pointService.changePoints(id)
     }
-
-    private fun Point.toRequestBody(): PointsRequest =
-        PointsRequest(
-            login = this.login,
-            points = this.points,
-            description = this.description
-        )
-
-    private fun PointsRequestAdd.toModelPoint(): Point =
-        Point(
-            id = 0,
-            login = null,
-            points = this.points,
-            description = this.description
-        )
 }
