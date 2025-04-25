@@ -23,7 +23,7 @@ class StartConfig(private val userService: UserService,
                     id = 0,
                     email = "admin",
                     login = "admin",
-                    password = encoder.encode("admin"),
+                    password = "admin",
                     role = Role.admin,
                     point = 1000
                 )

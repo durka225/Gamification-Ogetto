@@ -46,7 +46,8 @@ class RewardService(
         val reward = findById(request.idReward)
         val newPoint = PointsRequestAdd(
             points = (reward!!.cost)*(-1),
-            description = reward.title
+            description = reward.title,
+            reward = request.idReward
         )
 
         return pointService.addApplication(newPoint, token)

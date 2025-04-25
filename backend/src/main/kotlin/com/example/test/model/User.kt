@@ -15,8 +15,15 @@ data class User(
     val email: String,
     @Enumerated(EnumType.STRING)
     val role: Role,
-    var point: Int
+    var point: Int,
     // todo Добавить изменяемый массив с наградами, которые купил пользователь
+    @OneToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+        name = "user_rewards",
+        joinColumns = [JoinColumn(name = "user_id", referencedColumnName = "id")],
+        inverseJoinColumns = [JoinColumn(name = "rewards_id", referencedColumnName = "id")]
+    )
+    val rewards: MutableList<Reward> = mutableListOf()
 ) {
     constructor() : this(0, "", "", "", Role.user, 0)
 }

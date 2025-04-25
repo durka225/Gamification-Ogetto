@@ -25,25 +25,7 @@ class SecurityConfiguration (
         http
             .csrf { it.disable() }
             .authorizeHttpRequests {
-                it
-                .requestMatchers("/api/auth", "/api/auth/refresh", "/error",
-                    "/swagger-ui/**", "/v3/api-docs")
-                .permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/user")
-                    .permitAll()
-                .requestMatchers("/api/points/add")
-                    .permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/rewards")
-                    .permitAll()
-                .requestMatchers("/api/points/**")
-                    .hasRole("admin")
-                .requestMatchers("/api/rewards/**")
-                    .hasRole("admin")
-                .requestMatchers("/api/user/**")
-                    .hasRole("admin")
-                .anyRequest()
-                    .fullyAuthenticated()
-            
+                it.anyRequest().permitAll()
             }
             .sessionManagement {
                 it.sessionCreationPolicy(SessionCreationPolicy.STATELESS)

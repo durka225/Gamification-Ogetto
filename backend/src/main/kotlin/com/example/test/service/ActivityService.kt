@@ -22,7 +22,8 @@ class ActivityService(
     private val activityRepository: ActivityRepository,
     private val activityEndRepository: ActivityEndRepository,
     private val userRepository: UserRepository,
-    private val categoryRepository: CategoryRepository
+    private val categoryRepository: CategoryRepository,
+    private val pointService: PointService
 ) {
 
     @Transactional
@@ -36,6 +37,7 @@ class ActivityService(
                 title = activity.title,
                 category = activity.category
             )
+            pointService.addCompletedActivitiesRequest(activity)
             activityEndRepository.save(activityEnd)
             activityRepository.delete(activity)
         }

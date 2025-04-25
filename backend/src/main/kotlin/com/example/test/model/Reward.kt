@@ -11,7 +11,7 @@ data class Reward (
     val title: String,
     val description: String,
     val cost: Int,
-    val count: Int
+    var count: Int
 ) {
     constructor() : this(0, "", "", 0, 0)
 }

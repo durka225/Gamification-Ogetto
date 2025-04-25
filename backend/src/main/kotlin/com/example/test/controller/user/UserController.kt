@@ -52,12 +52,16 @@ class UserController(
             ?.toResponseUser()
             ?: throw ApiRequestException("Не удалось создать пользователя.") // Bad Request
 
+    @GetMapping
+    fun getUser(@RequestHeader("Authorization") token: String): UserResponse =
+        userService.getUser(token.substringAfter("Bearer "))
+
     @Operation(
         summary = "Получение всех пользователей",
         description = "Возвращает список всех пользователей, зарегистрированных в системе. " +
                 "Данный метод доступен только пользователям с ролью администратора."
     )
-    @GetMapping
+    @GetMapping("/all")
     fun listAll(): List<UserResponse> =
         userService.findByAll()
             .map {it.toResponseUser() }
@@ -145,6 +149,7 @@ class UserController(
             id = this.id,
             login = this.login,
             point = this.point,
+            rewards = this.rewards
         )
 
     private fun Transaction.toResponseTransaction(): TransactionResponse =
