@@ -1,6 +1,7 @@
 package com.example.test.service
 
 
+import com.example.test.model.PointStatus
 import com.example.test.repository.UserRepository
 import com.example.test.repository.PointRepository
 import com.example.test.repository.ActivityRepository
@@ -9,6 +10,7 @@ import com.example.test.model.TransactionType
 import com.example.test.model.Point
 import com.example.test.controller.exception.ApiRequestException
 import com.example.test.controller.exception.NotFoundException
+import com.example.test.controller.point.PointResponse
 import com.example.test.controller.point.PointsRequestAdd
 import com.example.test.model.Activity
 import com.example.test.repository.RewardRepository
@@ -46,14 +48,16 @@ class PointService(
                     ?: throw NotFoundException("Пользователь с логином ${login} не найден"),
                 points = application.points,
                 description = application.description,
-                idReward = reward
+                idReward = reward,
+                status = PointStatus.PENDING
             )
         } else {
             newApplication = Point(
                 id = 0,
                 login = userRepository.findByLogin(login) ?: throw NotFoundException("Пользователь не найден по указанному логину: $login."),
                 points = application.points,
-                description = application.description
+                description = application.description,
+                status = PointStatus.PENDING
             )
         }
         return pointRepository.save(newApplication)
@@ -67,11 +71,21 @@ class PointService(
 
     fun getAllApplications(): List<Point> = pointRepository.findAll()
 
+    // Новый метод, который возвращает список PointResponse
+    fun getAllApplicationsResponse(): List<PointResponse> =
+        pointRepository.findAll().map { it.toPointResponse() }
+
     @Transactional
     fun changePoints(id: Int): String {
         val pointsRequest = pointRepository.findById(id).orElseThrow {
             NotFoundException("Заявка с ID $id не найдена.")
         }
+        
+        // Проверяем, не обработана ли уже заявка
+        if (pointsRequest.status != PointStatus.PENDING) {
+            throw ApiRequestException("Заявка уже обработана и имеет статус ${pointsRequest.status}")
+        }
+        
         val points = pointsRequest.points 
                 ?: throw ApiRequestException("Баллы отсутствуют или равны null.") // Bad Request
         val description = pointsRequest.description 
@@ -89,9 +103,9 @@ class PointService(
             idUser = pointsRequest.login,
             date = currentDate,
             description = description,
+            count = points.toString(),
             type = if (points >= 0) TransactionType.Accrual else TransactionType.Deduction
         )
-
 
         if (idReward != null ) {
             if (idReward.count > 0) {
@@ -105,7 +119,10 @@ class PointService(
     
         transactionService.createTransaction(newTransaction)
         userRepository.save(pointsRequest.login)
-        pointRepository.deletePointsById(id)
+        
+        // Создаем новую заявку с обновленным статусом и сохраняем ее
+        val updatedPoint = pointsRequest.copy(status = PointStatus.APPROVED)
+        pointRepository.save(updatedPoint)
     
         return "Баллы пользователя успешно обновлены."
     }
@@ -125,9 +142,36 @@ class PointService(
                 id = 0,
                 login = user,
                 points = activity.reward,
-                description = "Участие в активности"
+                description = "Участие в активности",
+                status = PointStatus.PENDING
             )
             pointRepository.save(newPoint)
         }
     }
+    
+    fun getMyPoints(token: String): List<Point> {
+        val user = userRepository.findByLogin(tokenService.extractLogin(token)
+            ?: throw BadRequestException("Некорректный токен"))
+            ?: throw NotFoundException("Пользователь не найден")
+        return (pointRepository.findAllByLogin(user))
+    }
+
+    // Новый метод, который возвращает список PointResponse
+    fun getMyPointsResponse(token: String): List<PointResponse> {
+        val user = userRepository.findByLogin(tokenService.extractLogin(token)
+            ?: throw BadRequestException("Некорректный токен"))
+            ?: throw NotFoundException("Пользователь не найден")
+        return pointRepository.findAllByLogin(user).map { it.toPointResponse() }
+    }
+
+    // Вспомогательный метод для преобразования Point в PointResponse
+    private fun Point.toPointResponse(): PointResponse = 
+        PointResponse(
+            id = this.id,
+            login = this.login.login,
+            points = this.points,
+            description = this.description,
+            idReward = this.idReward?.id,
+            status = this.status
+        )
 }

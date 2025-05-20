@@ -11,7 +11,10 @@ data class Reward (
     val title: String,
     val description: String,
     val cost: Int,
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "category_id", nullable = false)
+    val category: CategoryReward = CategoryReward(),
     var count: Int
 ) {
-    constructor() : this(0, "", "", 0, 0)
+    constructor() : this(0, "", "", 0, CategoryReward(), 0)
 }

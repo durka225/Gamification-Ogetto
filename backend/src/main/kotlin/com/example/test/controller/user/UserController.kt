@@ -52,8 +52,17 @@ class UserController(
             ?.toResponseUser()
             ?: throw ApiRequestException("Не удалось создать пользователя.") // Bad Request
 
+    @Operation(
+        summary = "Получение информации о текущем пользователе",
+        description = "Возвращает данные о текущем аутентифицированном пользователе на основе JWT-токена. " +
+                "Информация включает идентификатор, имя, фамилию, логин, роль и количество баллов пользователя, " +
+                "а также список полученных наград. Требуется передача валидного токена в заголовке Authorization."
+    )
     @GetMapping
-    fun getUser(@RequestHeader("Authorization") token: String): UserResponse =
+    fun getUser(
+        @Parameter(description = "JWT-токен авторизации в формате 'Bearer {token}'")
+        @RequestHeader("Authorization") token: String
+    ): UserResponse =
         userService.getUser(token.substringAfter("Bearer "))
 
     @Operation(
@@ -136,20 +145,33 @@ class UserController(
     private fun UserRequest.toModel(): User =
         User(
             id = 0,
+            name = this.name,
+            surname = this.surname,
             login = this.login,
             password = this.password,
             role = Role.user,
-            point = 0,
-            email = this.email
+            point = 10000,
+            email = this.login
         )
 
     // Функция преобразования модели User в ответ UserResponse
     private fun User.toResponseUser(): UserResponse =
         UserResponse(
             id = this.id,
+            name = this.name,
+            surname = this.surname,
             login = this.login,
+            role = this.role,
             point = this.point,
-            rewards = this.rewards
+            rewards = this.rewards.map { reward ->
+                SimpleRewardResponse(
+                    id = reward.id,
+                    title = reward.title,
+                    description = reward.description,
+                    categoryName = reward.category.category,
+                    cost = reward.cost
+                )
+            }
         )
 
     private fun Transaction.toResponseTransaction(): TransactionResponse =
@@ -157,6 +179,7 @@ class UserController(
             id = this.id,
             date = this.date,
             description = this.description,
+            point = this.count,
             type = this.type.name
         )
 }

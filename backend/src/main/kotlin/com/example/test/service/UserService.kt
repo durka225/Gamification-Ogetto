@@ -1,5 +1,6 @@
 package com.example.test.service
 
+import com.example.test.controller.user.SimpleRewardResponse
 import com.example.test.model.User
 import com.example.test.repository.UserRepository
 import com.example.test.repository.ActivityRepository
@@ -46,11 +47,26 @@ class UserService(
             ?: throw ResponseStatusException(HttpStatus.FORBIDDEN, "Некорректный токен")
         val findUser = userRepository.findByLogin(login)
             ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Пользователь с логином ${login} не найден")
+
+        // Преобразуем список наград Reward в список SimpleRewardResponse
+        val simpleRewards = findUser.rewards.map { reward ->
+            SimpleRewardResponse(
+                id = reward.id,
+                title = reward.title,
+                description = reward.description,
+                categoryName = reward.category.category,
+                cost = reward.cost
+            )
+        }
+
         return UserResponse(
             id = findUser.id,
-            login = login,
+            name = findUser.name,
+            surname = findUser.surname,
+            login = findUser.email,
+            role = findUser.role,
             point = findUser.point,
-            rewards = findUser.rewards
+            rewards = simpleRewards
         )
     }
 

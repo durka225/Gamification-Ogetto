@@ -21,11 +21,13 @@ class StartConfig(private val userService: UserService,
             userService.createUser(
                 User(
                     id = 0,
-                    email = "admin",
-                    login = "admin",
+                    name = "Админ",
+                    surname = "Админов",
+                    email = "admin@email.com",
+                    login = "admin@email.com",
                     password = "admin",
                     role = Role.admin,
-                    point = 1000
+                    point = 10000
                 )
             )
         }

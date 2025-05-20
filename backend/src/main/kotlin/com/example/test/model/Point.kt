@@ -16,7 +16,10 @@ data class Point (
     // todo Добавить поле для хранения id награды, сделать его Nullable
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "reward_id", nullable = true)
-    val idReward: Reward? = null
+    val idReward: Reward? = null,
+
+    @Enumerated(EnumType.STRING)
+    val status: PointStatus = PointStatus.PENDING
 ) {
-    constructor() : this(0, User(), 0, "", Reward())
+    constructor() : this(0, User(), 0, "", Reward(), PointStatus.PENDING)
 }

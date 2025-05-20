@@ -1,17 +1,16 @@
 package com.example.test.controller.activity
 
-import com.example.test.controller.user.UserResponse
-import com.example.test.model.Category
-import org.springframework.cglib.core.Local
-import java.time.LocalDate
 import java.time.LocalDateTime
 
-class ActivityResponse (
+/**
+ * Модель ответа для активностей с упрощенной информацией
+ */
+data class ActivityResponse(
     val id: Int,
     val title: String,
     val reward: Int,
-    val category: Category,
-    val users: MutableList<UserResponse>,
+    val category: ActivityCategoryResponse,
+    val users: List<ActivityUserResponse>,
     val dateStart: LocalDateTime,
     val dateEnd: LocalDateTime
 )

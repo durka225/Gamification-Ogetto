@@ -13,10 +13,11 @@ data class Transaction (
     val idUser: User,
     val date: String,
     val description: String,
+    val count: String,
     @Enumerated(EnumType.STRING)
     val type: TransactionType,
 ) {
-    constructor() : this(0, User(), "", "", TransactionType.Accrual)
+    constructor() : this(0, User(), "", "", "", TransactionType.Accrual)
 }
 
 enum class TransactionType {

@@ -10,6 +10,8 @@ data class User(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Int,
+    val name: String,
+    val surname: String,
     val login: String,
     val password: String,
     val email: String,
@@ -25,7 +27,7 @@ data class User(
     )
     val rewards: MutableList<Reward> = mutableListOf()
 ) {
-    constructor() : this(0, "", "", "", Role.user, 0)
+    constructor() : this(0,"", "","", "", "", Role.user, 0)
 }
 
 enum class Role {

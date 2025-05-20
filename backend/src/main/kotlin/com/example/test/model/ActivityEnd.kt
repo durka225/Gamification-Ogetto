@@ -11,7 +11,7 @@ data class ActivityEnd (
     val title: String,
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "point_id", nullable = false)
-    val category: Category
+    val category: CategoryActivity
 ) {
-    constructor() : this(0, "", Category())
+    constructor() : this(0, "", CategoryActivity())
 }

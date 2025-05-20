@@ -43,14 +43,14 @@ class PointsController(
 
     @Operation(
         summary = "Получение всех заявок на начисление баллов",
-        description = "Возвращает список всех заявок на начисление баллов в системе. " +
+        description = "Возвращает список всех заявок на начисление баллов в системе в упрощенном формате. " +
                 "Перед возвратом результатов метод также обновляет кэш заявок, " +
                 "добавляя заявки из завершенных активностей."
     )
     @GetMapping
-    fun getAllPoints(): List<Point> {
+    fun getAllPoints(): List<PointResponse> {
         // pointService.addCompletedActivitiesRequest()
-        return pointService.getAllApplications()
+        return pointService.getAllApplicationsResponse()
     }
 
     @Operation(
@@ -67,4 +67,19 @@ class PointsController(
     ): String {
         return pointService.changePoints(id)
     }
+
+    @Operation(
+        summary = "Получение заявок текущего пользователя",
+        description = "Возвращает список всех заявок на начисление или списание баллов " +
+                "для текущего аутентифицированного пользователя. Заявки возвращаются в упрощенном формате " +
+                "и включают информацию о статусе, количестве баллов и описании. " +
+                "Требуется передача валидного токена в заголовке Authorization."
+    )
+    @GetMapping("/myPoints")
+    fun getMyPoints(
+        @Parameter(description = "JWT-токен авторизации в формате 'Bearer {token}'")
+        @RequestHeader("Authorization") token: String
+    ): List<PointResponse> =
+        pointService.getMyPointsResponse(token.substringAfter("Bearer "))
+
 }

@@ -1,5 +1,9 @@
 package com.example.test.service
 
+import com.example.test.controller.activity.ActivityCategoryResponse
+import com.example.test.controller.activity.ActivityUserResponse
+import com.example.test.controller.activity.CategoryActivityRequest
+import com.example.test.controller.activity.CategoryActivityUpdateRequest
 import com.example.test.repository.ActivityRepository
 import com.example.test.repository.UserRepository
 import com.example.test.model.Activity
@@ -7,11 +11,12 @@ import com.example.test.model.ActivityEnd
 import com.example.test.controller.activity.ActivityRequest
 import com.example.test.controller.activity.ActivityResponse
 import com.example.test.controller.exception.NotFoundException
+import com.example.test.controller.exception.ApiRequestException
 import com.example.test.controller.user.UserResponse
-import com.example.test.model.Category
+import com.example.test.model.CategoryActivity
 import com.example.test.model.User
 import com.example.test.repository.ActivityEndRepository
-import com.example.test.repository.CategoryRepository
+import com.example.test.repository.CategoryActivityRepository
 import jakarta.transaction.Transactional
 
 import org.springframework.stereotype.Service
@@ -22,7 +27,7 @@ class ActivityService(
     private val activityRepository: ActivityRepository,
     private val activityEndRepository: ActivityEndRepository,
     private val userRepository: UserRepository,
-    private val categoryRepository: CategoryRepository,
+    private val categoryActivityRepository: CategoryActivityRepository,
     private val pointService: PointService
 ) {
 
@@ -43,25 +48,26 @@ class ActivityService(
         }
 
         activities.removeAll(expiredActivities)
-        val activityResponse = mutableListOf<ActivityResponse>()
-        activities.forEach { it ->
-            activityResponse.add(ActivityResponse(
-                id = it.id,
-                title = it.title,
-                category = it.category,
-                reward = it.reward,
-                users = it.users.map { user ->
-                    UserResponse(
+        return activities.map { activity ->
+            ActivityResponse(
+                id = activity.id,
+                title = activity.title,
+                category = ActivityCategoryResponse(
+                    id = activity.category.id,
+                    category = activity.category.category
+                ),
+                reward = activity.reward,
+                users = activity.users.map { user ->
+                    ActivityUserResponse(
                         id = user.id,
-                        login = user.login,
-                        point = user.point
+                        name = user.name,
+                        surname = user.surname
                     )
-                }.toMutableList(),
-                dateStart = it.dateStart,
-                dateEnd = it.dateEnd
-            ))
+                },
+                dateStart = activity.dateStart,
+                dateEnd = activity.dateEnd
+            )
         }
-        return activityResponse
     }
 
     @Transactional
@@ -81,15 +87,72 @@ class ActivityService(
             NotFoundException("Активность с ID $id не найдена.")
         }
 
-        return activityRepository.save(request.toModelActivity(id, activity.users))
+        // Определяем категорию (новую или существующую)
+        val category = if (request.category_id != null) {
+            categoryActivityRepository.findById(request.category_id!!.toLong()).orElseThrow {
+                NotFoundException("Категория с ID ${request.category_id} не существует")
+            }
+        } else {
+            activity.category
+        }
+
+        // Создаем обновленную активность, используя значения из запроса или существующие
+        val updatedActivity = activity.copy(
+            title = request.title ?: activity.title,
+            category = category,
+            reward = request.reward ?: activity.reward,
+            dateStart = request.dateStart ?: activity.dateStart,
+            dateEnd = request.dateEnd ?: activity.dateEnd
+        )
+
+        return activityRepository.save(updatedActivity)
     }
 
     @Transactional
-    fun addNewCategory(newCategory: String): Category =
-        categoryRepository.save(Category(0, newCategory))
+    fun addNewCategory(categoryRequest: CategoryActivityRequest): CategoryActivity =
+        categoryActivityRepository.save(CategoryActivity(0, categoryRequest.nameCategory))
 
-    fun getAllCategory(): List<Category> =
-        categoryRepository.findAll()
+    fun getAllCategory(): List<CategoryActivity> =
+        categoryActivityRepository.findAll()
+
+    @Transactional
+    fun deleteActivity(id: Int): Boolean {
+        val activity = activityRepository.findById(id.toLong()).orElseThrow {
+            NotFoundException("Активность с ID $id не найдена")
+        }
+        activityRepository.delete(activity)
+        return true
+    }
+
+    @Transactional
+    fun deleteCategoryActivity(id: Long): Boolean {
+        val category = categoryActivityRepository.findById(id).orElseThrow {
+            NotFoundException("Категория с ID $id не найдена")
+        }
+
+        // Проверяем использование категории в активностях
+        val activities = activityRepository.findAll()
+        if (activities.any { it.category.id.toLong() == id }) {
+            throw ApiRequestException("Невозможно удалить категорию, которая используется в активностях")
+        }
+
+        categoryActivityRepository.delete(category)
+        return true
+    }
+
+    @Transactional
+    fun updateCategory(id: Long, updateRequest: CategoryActivityUpdateRequest): CategoryActivity {
+        val categoryActivity = categoryActivityRepository.findById(id).orElseThrow {
+            throw NotFoundException("Категория с ID $id не найдена!")
+        }
+        
+        // Создаем обновленную категорию, используя значения из запроса
+        val updatedCategory = categoryActivity.copy(
+            category = updateRequest.nameCategory.takeIf { it.isNotBlank() } ?: categoryActivity.category
+        )
+        
+        return categoryActivityRepository.save(updatedCategory)
+    }
 
     fun ActivityRequest.toModelActivity(id: Int? = 0, users: MutableList<User>? = mutableListOf()): Activity {
         val existingActivity = if (id != 0) {
@@ -100,7 +163,7 @@ class ActivityService(
             id = id ?: 0,
             title = this.title ?: existingActivity?.title ?: "",
             category = if (this.category_id != null)
-                categoryRepository.findById(this.category_id!!.toLong()).orElseThrow {
+                categoryActivityRepository.findById(this.category_id!!.toLong()).orElseThrow {
                     NotFoundException("Категория с ID ${this.category_id} не существует")
                 }
             else existingActivity?.category ?: throw NotFoundException("Категория не указана"),

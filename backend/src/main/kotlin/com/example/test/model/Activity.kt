@@ -12,7 +12,7 @@ data class Activity(
     val title: String,
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id", nullable = false)
-    val category: Category,
+    val category: CategoryActivity,
     val reward: Int,
     @OneToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -24,5 +24,5 @@ data class Activity(
     val dateStart: LocalDateTime,
     val dateEnd: LocalDateTime
 ) {
-    constructor() : this(0, "", Category(), 0, mutableListOf(), LocalDateTime.now(), LocalDateTime.now())
+    constructor() : this(0, "", CategoryActivity(), 0, mutableListOf(), LocalDateTime.now(), LocalDateTime.now())
 }
