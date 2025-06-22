@@ -1,14 +1,14 @@
 {
   "expo": {
-    "name": "newproject",
+    "name": "Oggeto сервис",
     "slug": "newproject",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/images/logoLogin.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/logo1.png",
+      "image": "./assets/images/logoLogin.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -17,10 +17,12 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/logo1.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/images/logoLogin.png",
+        "backgroundColor": "#FFFFFF"
       },
-      "package": "com.kopanenkos.newproject"
+      "icon": "./assets/images/logoLogin.png",
+      "package": "com.kopanenkos.newproject",
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/favicon.png"

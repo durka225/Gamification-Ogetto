@@ -1,130 +1,184 @@
-import { Pressable, TextInput, TouchableOpacity, StyleSheet, Text, View, Image } from 'react-native';
+import { Pressable, TextInput, TouchableOpacity, StyleSheet, Text, View, Image, Alert } from 'react-native';
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { Fonts } from '../../assets/fonts/Fonts';
-import Colors from '../../assets/Colors'
-import { LinearGradient } from 'expo-linear-gradient';
+import Colors from '../../assets/Colors';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const API_URL = "http://***/api/auth";
 
 const LoginScreen = () => {
   const navigation = useNavigation();
 
-  let formEmailStatus = false;
-  let formPasswordStatus = false;
-  let boolStatusFormsLogin = false;
-  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [checkEmail, setCheckEmail] = useState(false);
+
+  let formEmailStatus = true;
+  let formPasswordStatus = password.length > 4;
+  let boolStatusFormsLogin = formEmailStatus && formPasswordStatus;
 
   const handleRegistration = () => {
     navigation.navigate("Registration");
   };
+  const checkExistingSession = async () => {
+    try {
+      const accessToken = await AsyncStorage.getItem('accessToken');
+      if (accessToken) {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'App' }],
+        });
+      }
+    } catch (error) {
+      console.error('Ошибка проверки сессии:', error);
+    }
+  };
+  React.useEffect(() => {
+      checkExistingSession();
+  }, []);
+  const refreshAccessToken = async () => {
+    try {
+      const refreshToken = await AsyncStorage.getItem('refreshToken');
+      if (!refreshToken) return null;
 
-  const toTelephoneLogin = () => {
-    navigation.navigate("TelephoneLogin");
-  }
+      const response = await axios.post('http://***/auth/refresh', {
+        token: refreshToken,
+      }, {
+        headers: { 'Content-Type': 'application/json' },
+      });
 
-  const handleCheckEmail = (text) => {
-    const re = /\S+@\S+\.\S+/;
-    setEmail(text);
-    setCheckEmail(!re.test(text));
+      const { token } = response.data;
+      if (token) {
+        await AsyncStorage.setItem('accessToken', token);
+        return token;
+      }
+      return null;
+    } catch (error) {
+      console.error('Ошибка обновления токена:', error);
+      return null;
+    }
   };
 
-  !checkEmail ? formEmailStatus = true : formEmailStatus = false;
-  password.length > 7 ? formPasswordStatus = true : formPasswordStatus = false;
-  formEmailStatus && formPasswordStatus? boolStatusFormsLogin = true : boolStatusFormsLogin = false;
+  const handleLogin = async () => {
+    try {
+      const response = await axios.post(
+        API_URL,
+        { login: email, password: password },
+        {
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+      
+      await AsyncStorage.setItem('accessToken', response.data.accessToken);
+      await AsyncStorage.setItem('refreshToken', response.data.refreshToken);
 
-  const handleLogin = () => {
-    if (!checkEmail && email && password) {
-      navigation.navigate("Main");
-    } else {
-      alert("Пожалуйста, заполните все поля корректно.");
+      navigation.navigate('App');
+    } catch (error) {
+      if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+        const newToken = await refreshAccessToken();
+        if (newToken) {
+          Alert.alert('Токен обновлен', 'Попробуйте войти снова.');
+        } else {
+          Alert.alert('Ошибка', 'Сессия истекла. Войдите заново.');
+        }
+      } else {
+        console.error("Ошибка авторизации:", error);
+        Alert.alert('Ошибка', 'Ошибка авторизации');
+      }
     }
   };
 
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={['#FFFFFF', '#FFED00', '#FDC200']}
-        locations={[0, 0.6, 0.96]}
-        style={styles.gradient}
-      ></LinearGradient>
-      <View style={[styles.inputContainer, {marginTop: '30%'}]}>
+        <Image style={{height:"25%", width: "50%"}}
+          source={require('../../assets/images/logoLogin.png')}
+        />
+      <View style={[styles.inputWrapper, { marginTop: '10%' }]}>
         <TextInput
           value={email}
-          onChangeText={(text) => handleCheckEmail(text)}
-          style={[styles.textInput]}
-          placeholder="Логин или почта"
-          placeholderTextColor= {Colors.gray}
+          onChangeText={setEmail}
+          style={styles.textInputWithIcon}
+          placeholder="Почта"
+          placeholderTextColor={Colors.gray}
           keyboardType="email-address"
         />
-        {email === '' ? (
-          <Image
-            style={{ position: 'absolute', left: '92%', top: '35%' }}
-            source={require('../../assets/images/userIcon.png')}
-          />
-        ) : formEmailStatus ? (
-          <Image
-            style={{ position: 'absolute', left: '92%', top: '35%' }}
-            source={require('../../assets/images/correctFormIcon.png')}
-          />
-        ) : (
-          <Image
-            style={{ position: 'absolute', left: '92%', top: '35%' }}
-            source={require('../../assets/images/userIcon.png')}
-          />
-        )}
+        <Image
+          style={styles.icon}
+          source={
+            email === ''
+              ? require('../../assets/images/emailIcon.png')
+              : formEmailStatus
+              ? require('../../assets/images/correctFormIcon.png')
+              : require('../../assets/images/emailIcon.png')
+          }
+        />
       </View>
-      {checkEmail ? <Text style={styles.wrongText}>Некорректный ввод почты</Text> : <Text> </Text>}
-      <View style={styles.inputContainer}>
+
+      <View style={styles.inputWrapper}>
         <TextInput
           onChangeText={(text) => setPassword(text)}
           value={password}
           secureTextEntry={true}
-          style={styles.textInput}
+          style={styles.textInputWithIcon}
           placeholder="Пароль"
-          placeholderTextColor= {Colors.gray}
+          placeholderTextColor={Colors.gray}
         />
-        {formPasswordStatus ? 
-          <Image  style = {{position: 'absolute', left: '92%', top: '35%'}}
-                  source= {require('../../assets/images/correctFormIcon.png')}/> : 
-          <Image  style = {{position: 'absolute', left: '92%', top: '35%'}}
-                  source= {require('../../assets/images/passwordIcon.png')}/>
-        }
+        <Image
+          style={styles.icon}
+          source={
+            formPasswordStatus
+              ? require('../../assets/images/correctFormIcon.png')
+              : require('../../assets/images/passwordIcon.png')
+          }
+        />
       </View>
-      <View style={{marginLeft: '64%'}}>
-        <TouchableOpacity style = {{ width: '100%' }}>
-          <Text onPress={handleRegistration} style={{fontSize: 13, color: Colors.black, fontFamily: Fonts.MontserratBold, marginLeft: '3%', marginTop: '5%' }}>
+
+      <View style={{ marginLeft: '64%' }}>
+        <TouchableOpacity>
+          <Text
+            onPress={handleRegistration}
+            style={{
+              fontSize: 13,
+              color: Colors.black,
+              fontFamily: Fonts.MontserratBold,
+              marginLeft: '3%',
+            }}
+          >
             Забыли пароль?
           </Text>
         </TouchableOpacity>
       </View>
-      <Text style = {{textAlign: 'center', marginTop: 77, marginBottom: 20, fontSize: 15, fontFamily: Fonts.Montserrat}}>или войдите через</Text>
-      <View style = {{flexDirection: 'row', marginBottom: 43}}>
-        <Image style = {{marginRight: 24}} source={require('../../assets/images/googleIcon.png')}/>
-        <Pressable onPress={toTelephoneLogin} style ={{}}>
-          <Image style = {{}} source={require('../../assets/images/telephoneIcon.png')}/>
-        </Pressable>
-      </View>
+
       <View style={styles.loginContainer}>
         <TouchableOpacity
           style={[
             styles.loginButton,
             { backgroundColor: boolStatusFormsLogin ? Colors.orange : 'rgba(235, 200, 0, 0.45)' },
-            { elevation: boolStatusFormsLogin ? 8 : 0 }
+            { elevation: boolStatusFormsLogin ? 8 : 0 },
           ]}
-          disabled = {!boolStatusFormsLogin}
+          disabled={!boolStatusFormsLogin}
           activeOpacity={1}
           onPress={handleLogin}
         >
-          <Text style={[styles.loginText, {color: boolStatusFormsLogin ?  Colors.black : 'rgba(0, 0, 0, 0.34)'}]}>ВОЙТИ</Text>
+          <Text style={[styles.loginText, { color: boolStatusFormsLogin ? Colors.black : 'rgba(0, 0, 0, 0.34)' }]}>
+            ВОЙТИ
+          </Text>
         </TouchableOpacity>
       </View>
+
       <View style={{ flexDirection: 'row', justifyContent: 'center', top: 18 }}>
-        <Text style={{ fontSize: 12, fontFamily: Fonts.Montserrat }}>Нет аккаунта?</Text>
         <TouchableOpacity>
-          <Text onPress={handleRegistration} style={{ fontSize: 12, color: Colors.black, fontFamily: Fonts.MontserratBold, marginLeft: 5 }}>
-            Зарегистрироваться.
+          <Text
+            onPress={handleRegistration}
+            style={{
+              fontSize: 12,
+              color: Colors.black,
+              fontFamily: Fonts.MontserratBold,
+              marginLeft: 5,
+            }}
+          >
+            Зарегистрироваться
           </Text>
         </TouchableOpacity>
       </View>
@@ -140,31 +194,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
   },
-  gradient: {
-    position: 'absolute',
-    height: '100%',
-    left: 0,
-    right: 0,
-  },
-  background: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    height: '50%',
-  },
-  formContainer: {
+  inputWrapper: {
+    flexDirection: 'row',
     alignItems: 'center',
-  },
-  inputContainer: {
     borderBottomWidth: 1,
     borderColor: Colors.black,
     width: '80%',
+    marginBottom: 10,
   },
-  textInput: {
+  textInputWithIcon: {
+    flex: 1,
     fontFamily: Fonts.Montserrat,
     fontSize: 16,
-    top: '15%',
+    paddingVertical: 10,
+  },
+  icon: {
+    width: 24,
+    height: 24,
+    resizeMode: 'contain',
+    marginLeft: 10,
+  },
+  loginContainer: {
+    flexDirection: 'row',
+    width: "80%",
+    height: "9%",
+    borderRadius: 70,
+    marginTop: "50%",
   },
   loginButton: {
     justifyContent: 'center',
@@ -173,24 +228,7 @@ const styles = StyleSheet.create({
     borderRadius: 100,
   },
   loginText: {
-    color: Colors.black,
     fontSize: 24,
     fontFamily: Fonts.Montserrat,
-  },
-  loginContainer: {
-    flexDirection: 'row',
-    borderRadius: 70,
-    width: 346,
-    height: 73,
-    top: 5,
-  },
-  wrongText: {
-    fontSize: 10,
-    fontFamily: Fonts.Montserrat,
-    color: Colors.red,
-    marginLeft: 20,
-    marginTop: 5,
-    marginBottom: 5,
-    right: '27%'
   },
 });

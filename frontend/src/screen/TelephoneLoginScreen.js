@@ -16,11 +16,6 @@ const TelephoneLoginScreen = () => {
   const navigation = useNavigation();
   return (
     <View style = {styles.container}>
-      <LinearGradient
-        colors={['#FFFFFF', '#FFED00', '#FDC200']}
-        locations={[0, 0.6, 0.96]}
-        style={styles.gradient}
-      ></LinearGradient>
       <View style = {{flexDirection: 'row', justifyContent: 'center', alignItems: 'center', }}>
         <TouchableOpacity onPress = { () => navigation.goBack() } activeOpacity = {1} style = {{position: 'absolute', right: '43%', top: '25%'}}>
           <Image source={require('../../assets/images/backIcon.png')}/>

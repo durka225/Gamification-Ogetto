@@ -1,246 +1,221 @@
-import { TextInput, TouchableOpacity, StyleSheet, Text, View, Image } from 'react-native';
+import {
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  Alert,
+} from 'react-native';
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { Fonts } from '../../assets/fonts/Fonts';
-import Colors from '../../assets/Colors'
-import { LinearGradient } from 'expo-linear-gradient';
+import Colors from '../../assets/Colors';
+import axios from 'axios';
+
+const API_URL = "http://***/api/user";
 
 const RegistrationScreen = () => {
   const navigation = useNavigation();
-  const handleLogin = () => {
-    navigation.navigate("Login");
-  }  
 
-  let boolStatusFormsRegistration = false;
-  let userForm = false;
-  let emailForm = false;
-  let passwordForm = false;
-  let confirmPasswordForm = false;
-
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
+  const [name, setname] = useState('');
+  const [surname, setsurname] = useState('');
+  const [login, setlogin] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  const [usernameError, setUsernameError] = useState(false);
-  const [emailError, setEmailError] = useState(false);
-  const [passwordError, setPasswordError] = useState(false);
-  const [confirmPasswordError, setConfirmPasswordError] = useState(false);
+  const [nameError, setnameError] = useState('');
+  const [surnameError, setsurnameError] = useState('');
+  const [loginError, setloginError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [confirmPasswordError, setConfirmPasswordError] = useState('');
 
-  const [isUsernameTouch, setIsUsernameTouch] = useState(false);
-  const [isEmailTouch, setIsEmailTouch] = useState(false);
-  const [isPasswordTouch, setIsPasswordTouch] = useState(false);
-  const [isConfirmPasswordTouch, setIsConfirmPasswordTouch] = useState(false);
+  const checknameValidity = (value) => {
+    if (value.length < 2) return 'Имя должно быть больше 1 символа';
+    return '';
+  };
 
-  const checkUsernameValidity = (value) => {
-    const isValidLength = /^.{4,50}$/;
-    if (!isValidLength.test(value)) {
-        return 'Имя пользователя должно быть больше 3 символов';
-    }
-    const isNonWhiteSpace = /^\S*$/;
-    if (!isNonWhiteSpace.test(value)) {
-      return 'Имя пользователя не должно содержать пробелов.';
-    }
-    return null
-  }
+  const checksurnameValidity = (value) => {
+    if (value.length < 2) return 'Фамилия должна быть больше 1 символа';
+    return '';
+  };
 
-  const checkEmailValidity = (value) => {
-    const re = /\S+@\S+\.\S+/;
-    if (!re.test(value)) {
-      return 'Введите корректный email.';
-    }
-    return null;
-  }
+  const checkloginValidity = (value) => {
+    return /\S+@\S+\.\S+/.test(value) ? '' : 'Введите корректный login.';
+  };
 
   const checkPasswordValidity = (value) => {
-    const isNonWhiteSpace = /^\S*$/;
-    if (!isNonWhiteSpace.test(value)) {
-      return 'Пароль не должен содержать пробелов.';
-    }
-    const isContainsUppercase = /^(?=.*[A-Z]).*$/;
-    if (!isContainsUppercase.test(value)) {
-      return 'Пароль должен содержать хотя бы одну заглавную букву.';
-    }
-    const isContainsLowercase = /^(?=.*[a-z]).*$/;
-    if (!isContainsLowercase.test(value)) {
-      return 'Пароль должен содержать хотя бы одну строчную букву.';
-    }
-    const isContainsNumber = /^(?=.*[0-9]).*$/;
-    if (!isContainsNumber.test(value)) {
-      return 'Пароль должен содержать хотя бы одну цифру.';
-    }
-    const isValidLength = /^.{8,24}$/;
-    if (!isValidLength.test(value)) {
-      return 'Пароль должен содержать от 8 до 24 символов.';
-    }
-    return null;
+    if (/\s/.test(value)) return 'Пароль не должен содержать пробелов.';
+    if (!/[A-Z]/.test(value)) return 'Пароль должен содержать заглавную букву.';
+    if (!/[a-z]/.test(value)) return 'Пароль должен содержать строчную букву.';
+    if (!/\d/.test(value)) return 'Пароль должен содержать цифру.';
+    if (value.length < 8 || value.length > 24) return 'Пароль должен содержать от 8 до 24 символов.';
+    return '';
   };
-  
+
   const checkConfirmPasswordValidity = (value) => {
-    if (value!== password) return 'Пароли не совпадают.';
-    return null;
-  }
-
-  const handleRegistration = () => {
-    navigation.navigate("Main");
-  };
-  const handleUsernameChange = (text) => {
-    if (!isUsernameTouch) setIsUsernameTouch(true);
-    setUsername(text);
-    const error = checkUsernameValidity(text);
-    setUsernameError(error);
-  };
-  const handleEmailChange = (text) => {
-    if (!isEmailTouch) setIsEmailTouch(true);
-    setEmail(text);
-    const error = checkEmailValidity(text);
-    setEmailError(error);
-  };
-  
-  const handlePasswordChange = (text) => {
-    if (!isPasswordTouch) setIsPasswordTouch(true);
-    setPassword(text);
-    const error = checkPasswordValidity(text);
-    setPasswordError(error);
+    return value !== password ? 'Пароли не совпадают.' : '';
   };
 
-  const handleConfirmPasswordChange = (text) => {
-    if (!isConfirmPasswordTouch) setIsConfirmPasswordTouch(true);
-    setConfirmPassword(text);
-    const error = checkConfirmPasswordValidity(text);
-    setConfirmPasswordError(error);
+  const handleRegistration = async () => {
+    if (!name || !surname || !login || !password || !confirmPassword) {
+      Alert.alert('Ошибка', 'Заполните все поля');
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        API_URL,
+        { name, surname, login, password },
+        { headers: { 'Content-Type': 'application/json' } }
+      );
+      navigation.navigate("Login");
+    } catch (error) {
+      if (error.response && error.response.status === 400) {
+        Alert.alert('Ошибка', 'Пользователь с таким логином или email уже существует, либо данные некорректны.');
+      } else {
+        console.error(error.response?.data || error.message);
+        Alert.alert('Ошибка', 'Не удалось зарегистрироваться. Попробуйте позже.');
+      }
+    }
   };
 
-  !usernameError && isUsernameTouch ? (userForm = true)     : (userForm = false);
-  !passwordError && isPasswordTouch ? (passwordForm = true) : (passwordForm = false);
-  !emailError    && isEmailTouch    ? (emailForm = true)    : (emailForm = false);
-  !confirmPasswordError && isConfirmPasswordTouch ? (confirmPasswordForm = true) : (confirmPasswordForm = false);
-  userForm && passwordForm && confirmPasswordForm && emailForm ? boolStatusFormsRegistration = true : boolStatusFormsRegistration = false;
-  
+  const isFormValid =
+    !checknameValidity(name) &&
+    !checksurnameValidity(surname) &&
+    !checkloginValidity(login) &&
+    !checkPasswordValidity(password) &&
+    !checkConfirmPasswordValidity(confirmPassword);
+
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={['#FFFFFF', '#FFED00', '#FDC200']}
-        locations={[0, 0.6, 0.96]}
-        style={styles.gradient}
-      ></LinearGradient>
-      <View style = {{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 120, marginTop: '20%'}}>
-        <TouchableOpacity onPress = { () => navigation.goBack() } activeOpacity = {1} style = {{position: 'absolute', right: 240}}>
-          <Image source={require('../../assets/images/backIcon.png')}/>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Image source={require('../../assets/images/backIcon.png')} />
         </TouchableOpacity>
-        <View style = {{alignItems: 'center'}}>
-          <Text style = {{ fontSize: 36, fontFamily: Fonts.Montserrat}}>Регистрация</Text>
-        </View>
+        <Text style={styles.title}>Регистрация</Text>
       </View>
-      <View style={styles.inputContainer}>
+      <View style={styles.inputWrapper}>
         <TextInput
-          onChangeText={(text) => handleUsernameChange(text)}
-          value={username}
+          value={name}
+          onChangeText={(text) => {
+            setname(text);
+            setnameError(checknameValidity(text));
+          }}
           style={styles.textInput}
-          placeholder="Введите имя пользователя"
-          placeholderTextColor= {Colors.gray}
+          placeholder="Введите имя"
+          placeholderTextColor={Colors.gray}
         />
-        {userForm ? 
-          <Image  style = {{position: 'absolute', left: '92%', top: '35%'}}
-                  source= {require('../../assets/images/correctFormIcon.png')}/> : 
-          <Image  style = {{position: 'absolute', left: '92%', top: '35%'}}
-                  source= {require('../../assets/images/userIcon.png')}/>
-        }
+        <Image
+          style={styles.icon}
+          source={
+            name && !nameError
+              ? require('../../assets/images/correctFormIcon.png')
+              : require('../../assets/images/userIcon.png')
+          }
+        />
       </View>
-      <View style = {{textAlign: 'center'}}>
-        {usernameError ? 
-        <Text style={styles.wrongText}>
-          {usernameError}
-        </Text> : <Text> </Text>}
-      </View>
-      <View style={styles.inputContainer}>
+      {nameError ? <Text style={styles.errorText}>{nameError}</Text> : null}
+      
+      <View style={styles.inputWrapper}>
         <TextInput
-          value={email}
-          onChangeText={(text) => handleEmailChange(text)}
-          style={[styles.textInput]}
+          value={surname}
+          onChangeText={(text) => {
+            setsurname(text);
+            setsurnameError(checksurnameValidity(text));
+          }}
+          style={styles.textInput}
+          placeholder="Введите фамилию"
+          placeholderTextColor={Colors.gray}
+        />
+        <Image
+          style={styles.icon}
+          source={
+            surname && !surnameError
+              ? require('../../assets/images/correctFormIcon.png')
+              : require('../../assets/images/userIcon.png')
+          }
+        />
+      </View>
+      {surnameError ? <Text style={styles.errorText}>{surnameError}</Text> : null}
+
+      <View style={styles.inputWrapper}>
+        <TextInput
+          value={login}
+          onChangeText={(text) => {
+            setlogin(text);
+            setloginError(checkloginValidity(text));
+          }}
+          style={styles.textInput}
           placeholder="Введите email"
-          placeholderTextColor= {Colors.gray}
-          keyboardType="email-address"
+          placeholderTextColor={Colors.gray}
+          keyboardType="login-address"
         />
-        {emailForm ? 
-          <Image  style = {{position: 'absolute', left: '92%', top: '35%'}}
-                  source= {require('../../assets/images/correctFormIcon.png')}/> : 
-          <Image  style = {{position: 'absolute', left: '92%', top: '35%'}}
-                  source= {require('../../assets/images/emailIcon.png')}/>
-        }
+        <Image
+          style={styles.icon}
+          source={
+            login && !loginError
+              ? require('../../assets/images/correctFormIcon.png')
+              : require('../../assets/images/emailIcon.png')
+          }
+        />
       </View>
-      <View style = {{textAlign: 'center'}}>
-        {emailError ?
-        <Text style={styles.wrongText}>
-            Некорректный ввод почты
-        </Text>
-        : <Text> </Text>}
-      </View>
-      <View style={styles.inputContainer}>
+      {loginError ? <Text style={styles.errorText}>{loginError}</Text> : null}
+
+      <View style={styles.inputWrapper}>
         <TextInput
-          onChangeText={(text) => handlePasswordChange(text)}
           value={password}
-          secureTextEntry={true}
+          onChangeText={(text) => {
+            setPassword(text);
+            setPasswordError(checkPasswordValidity(text));
+          }}
+          secureTextEntry
           style={styles.textInput}
           placeholder="Придумайте пароль"
-          placeholderTextColor = {Colors.gray}
+          placeholderTextColor={Colors.gray}
         />
-        {passwordForm ? 
-          <Image  style = {{position: 'absolute', left: '92%', top: '35%'}}
-                  source= {require('../../assets/images/correctFormIcon.png')}/> : 
-          <Image  style = {{position: 'absolute', left: '92%', top: '35%'}}
-                  source= {require('../../assets/images/passwordIcon.png')}/>
-        }
+        <Image
+          style={styles.icon}
+          source={
+            password && !passwordError
+              ? require('../../assets/images/correctFormIcon.png')
+              : require('../../assets/images/passwordIcon.png')
+          }
+        />
       </View>
-      <View style = {{textAlign: 'center'}}>
-        {passwordError ? 
-        <Text style={styles.wrongText}>
-          {passwordError}
-        </Text> : <Text> </Text>}
-      </View>
-      <View style={styles.inputContainer}>
+      {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
+
+      <View style={styles.inputWrapper}>
         <TextInput
-          onChangeText={(text) => handleConfirmPasswordChange(text)}
           value={confirmPassword}
-          secureTextEntry={true}
+          onChangeText={(text) => {
+            setConfirmPassword(text);
+            setConfirmPasswordError(checkConfirmPasswordValidity(text));
+          }}
+          secureTextEntry
           style={styles.textInput}
           placeholder="Повторите пароль"
-          placeholderTextColor = {Colors.gray}
+          placeholderTextColor={Colors.gray}
         />
-        {confirmPasswordForm ? 
-          <Image  style = {{position: 'absolute', left: '92%', top: '35%'}}
-                  source= {require('../../assets/images/correctFormIcon.png')}/> : 
-          <Image  style = {{position: 'absolute', left: '92%', top: '35%'}}
-                  source= {require('../../assets/images/passwordIcon.png')}/>
-        }
+        <Image
+          style={styles.icon}
+          source={
+            confirmPassword && !confirmPasswordError
+              ? require('../../assets/images/correctFormIcon.png')
+              : require('../../assets/images/passwordIcon.png')
+          }
+        />
       </View>
-      <View style = {{textAlign: 'center'}}>
-        {confirmPasswordError ? 
-        <Text style={styles.wrongText}>
-          {confirmPasswordError}
-        </Text> : <Text> </Text>}
-      </View>
-      <View style={styles.loginContainer}>
+      {confirmPasswordError ? <Text style={styles.errorText}>{confirmPasswordError}</Text> : null}
+
+      <View style={styles.buttonContainer}>
         <TouchableOpacity
-          style={[
-            styles.loginButton,
-            { backgroundColor: boolStatusFormsRegistration ? Colors.orange : 'rgba(235, 200, 0, 0.45)' },
-            ]}
-            activeOpacity={1}
-            disabled = {!boolStatusFormsRegistration}
-            onPress={handleRegistration}
-          >
-          <Text style={[styles.loginText, 
-            {color: boolStatusFormsRegistration ?  Colors.black : 'rgba(0, 0, 0, 0.34)'},
-            { elevation: boolStatusFormsRegistration ? 8 : 0 }
-            ]}>ЗАРЕГИСТРИРОВАТЬСЯ</Text>
-        </TouchableOpacity>
-      </View>
-      <View style={{ flexDirection: 'row', width: '98%', height: '10%', justifyContent: 'center', marginTop: 15 }}>
-        <Text style={{ fontSize: 12, fontFamily: Fonts.Montserrat }}>Уже есть аккаунт?</Text>
-        <TouchableOpacity>
-          <Text onPress={handleLogin} style={{ fontSize: 12, color: Colors.black, fontFamily: Fonts.MontserratBold , marginLeft: 5 }}>
-            Войти.
+          style={[styles.button, { backgroundColor: isFormValid ? Colors.orange : 'rgba(235, 200, 0, 0.45)' }]}
+          disabled={!isFormValid}
+          onPress={handleRegistration}
+        >
+          <Text style={[styles.buttonText, { color: isFormValid ? Colors.black : 'rgba(0, 0, 0, 0.34)' }]}>
+            ЗАРЕГИСТРИРОВАТЬСЯ
           </Text>
         </TouchableOpacity>
       </View>
@@ -250,51 +225,65 @@ const RegistrationScreen = () => {
 
 export default RegistrationScreen;
 
-export const styles = StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
-    justifyContent: 'center',
-    alignItems: 'center',
     flex: 1,
+    alignItems: 'center',
+    paddingTop: 60,
   },
-  gradient: {
-    position: 'absolute',
-    height: '100%',
-    left: 0,
-    right: 0,
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '80%',
+    marginBottom: 40,
   },
-  inputContainer: {
+  title: {
+    fontSize: 36,
+    fontFamily: Fonts.Montserrat,
+    marginLeft: 20,
+  },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
     borderBottomWidth: 1,
     borderColor: Colors.black,
     width: '80%',
+    marginBottom: 10,
   },
   textInput: {
+    flex: 1,
     fontFamily: Fonts.Montserrat,
     fontSize: 16,
-    top: '15%',
+    paddingVertical: 10,
   },
-  loginButton: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: "100%",
-    borderRadius: 100,
+  icon: {
+    width: 24,
+    height: 24,
+    resizeMode: 'contain',
+    marginLeft: 10,
   },
-  loginText: {
-    color: Colors.black,
-    fontSize: 24,
-    fontFamily: Fonts.Montserrat,
-  },
-  loginContainer: {
-    marginTop: '15%',
-    flexDirection: 'row',
-    borderRadius: 70,
-    width: 346,
-    height: 73,
-  },
-  wrongText: {
+  errorText: {
+    color: Colors.red,
     fontSize: 10,
     fontFamily: Fonts.Montserrat,
-    color: Colors.red,
-    marginTop: 5,
-    marginBottom: 5,
+    alignSelf: 'flex-start',
+    marginLeft: '10%',
+    marginBottom: 10,
+  },
+  buttonContainer: {
+    width: "80%",
+    height: "10%",
+    marginTop: "55%",
+    borderRadius: 70,
+  },
+  button: {
+    flex: 1,
+    borderRadius: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  buttonText: {
+    fontSize: 24,
+    fontFamily: Fonts.Montserrat,
   },
 });
